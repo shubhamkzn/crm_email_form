@@ -9,6 +9,8 @@ import path from "path";
 import emailRoutes from "./routes/emailRoutes.js";
 import formRoute from "./routes/form.js"
 import submissionRoute from "./routes/submission.js"
+import regionRoute from './routes/region.route.js'
+import websiteRoute from './routes/websiteRoutes.js'
 dotenv.config();
 
 const app = express();
@@ -36,9 +38,10 @@ const startServer = async () => {
     app.use("/api/auth", authRoutes);
     app.use("/api/dash", dashRoutes);
     app.use("/api/email", emailRoutes);
-    
-app.use('/form', formRoute);
-app.use('/submission', submissionRoute);
+    app.use('/api/region',regionRoute);
+    app.use('/api/websites',websiteRoute)
+    app.use('/form', formRoute);
+    app.use('/submission', submissionRoute);
 
 
     if (process.env.NODE_ENV === "production") {

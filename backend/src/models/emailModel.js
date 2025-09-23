@@ -25,17 +25,18 @@ export const getAllBrands = async () => {
   const [rows] = await conn.execute(
     "SELECT id, name, log_table FROM brands ORDER BY name"
   );
+  console.log('brands', rows);
   return rows;
 };
 
-export const addBrand = async (name) => {
+export const addBrand = async ({ name, countryId }) => {
   const conn = getConnection();
   const logTable = `email_logs_${name.toLowerCase().replace(/[^a-z0-9_]/g, "_")}`;
 
   const [result] = await conn.query(
-    `INSERT INTO brands (name, log_table, created_at) 
-     VALUES (?, ?, CURRENT_TIMESTAMP)`,
-    [name, logTable]
+    `INSERT INTO brands (name, log_table,country_id, created_at) 
+     VALUES (?, ?,?, CURRENT_TIMESTAMP)`,
+    [name, logTable, countryId]
   );
 
   return {
@@ -54,6 +55,12 @@ export const getBrandByName = async (brand) => {
   );
   return rows.length > 0 ? rows[0] : null;
 };
+
+export const getBrandByRegion = async ({ regionId }) => {
+  const conn = getConnection();
+  const [row] = await conn.execute("Select id, name FROM brands WHERE country_id = ?", [regionId]);
+  return row
+}
 
 // -------------------- EMAIL LOGS (Brand-Specific) --------------------
 export const ensureBrandTableExists = async (tableName) => {

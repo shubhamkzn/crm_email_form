@@ -8,37 +8,57 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import config from "../config";
 
-const countries = ["USA", "Australia"];
+// const countries = ["USA", "Australia"];
 // const brands = ['A', 'B', 'C'];
 
 
 const FormBuild = ({ isEdit }) => {
     const [formName, setFormName] = useState('');
-      const [brands, setBrands] = useState([]);
-    
-    const [country, setCountry] = useState('');
+    const [brands, setBrands] = useState([]);
+    const [regions, setRegions] = useState([])
+    const [country, setCountry] = useState({});
+    const [websites, setWebsites] = useState([]);
+    const [website, setWebsite] = useState("");
     const [brand, setBrand] = useState('');
     const [schema, setSchema] = useState({ components: [] });
-    const { id } = useParams(); 
+    const { id } = useParams();
     const [formFetched, setFormFetched] = useState(false);
     const [dialogueOpen, setDialogueOpen] = useState(false);
-    const [initialSchema,setInitialSchema] = useState({components: []});
+    const [initialSchema, setInitialSchema] = useState({ components: [] });
 
     const navigate = useNavigate();
     const builderRef = useRef()
 
-  useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const res = await fetch("http://localhost:3000/api/email/brands");
-        const data = await res.json();
-        setBrands(data);
-      } catch (err) {
-        console.error("Error fetching brands:", err);
-      }
+    const fetchBrands = async ({ regionId }) => {
+        try {
+            const res = await axios(`${import.meta.env.VITE_BASE_URL}/api/email/brands/${regionId}`);
+            setBrands(res.data);
+        } catch (err) {
+            console.error("Error fetching brands:", err);
+        }
     };
-    fetchBrands();
-  }, []);
+
+    const fetchWebsites = async ({ brandId }) => {
+        try {
+            const res = await axios(`${import.meta.env.VITE_BASE_URL}/api/websites/${brandId}`)
+            setWebsites(res.data);
+        }
+        catch (e) {
+            console.log('Error fetching websites', e);
+        }
+    }
+    useEffect(() => {
+        const fetchRegion = async () => {
+            try {
+                const res = await axios(`${import.meta.env.VITE_BASE_URL}/api/region`);
+                setRegions(res.data)
+            }
+            catch (e) {
+                console.log(e)
+            }
+        }
+        fetchRegion();
+    }, []);
 
 
     async function saveForm(payload) {
@@ -77,7 +97,7 @@ const FormBuild = ({ isEdit }) => {
 
     function handleDialogueConfirm() {
         setDialogueOpen(false);
-        handleSave(); 
+        handleSave();
     };
 
     function handleSave() {
@@ -103,7 +123,7 @@ const FormBuild = ({ isEdit }) => {
         } catch (err) {
             console.log("Failed to load form");
         }
-    },[id]);
+    }, [id]);
 
 
     useEffect(() => {
@@ -118,13 +138,13 @@ const FormBuild = ({ isEdit }) => {
                 builder.on("change", updateSchema);
             });
         }
-    }, [formFetched,builderRef,initialSchema]);
+    }, [formFetched, builderRef, initialSchema]);
 
     useEffect(() => {
         if (isEdit) {
             fetchForm()
         }
-    }, [isEdit,fetchForm])
+    }, [isEdit, fetchForm])
     return (
         <Box className='d-flex flex-col gap-10 items-center justify-center p-8' component="form" onSubmit={validation} >
 
@@ -136,7 +156,7 @@ const FormBuild = ({ isEdit }) => {
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         sx={{
-                            width: { xs: "100%", sm: 220 }, 
+                            width: { xs: "100%", sm: 220 },
                             minWidth: 160,
                             backgroundColor: "white"
                         }}
@@ -148,18 +168,22 @@ const FormBuild = ({ isEdit }) => {
                         select
                         fullWidth
                         label="Country"
-                        value={country}
-                        onChange={(e) => setCountry(e.target.value)}
+                        value={country?.countryName || ""}
+                        onChange={(e) => {
+                            const region = regions?.filter((val) => val.countryName == e.target.value);
+                            setCountry(region[0]);
+                            fetchBrands({ regionId: region[0].id });
+                        }}
                         sx={{
-                            width: { xs: "100%", sm: 220 }, 
+                            width: { xs: "100%", sm: 220 },
                             minWidth: 160,
                             backgroundColor: "white"
                         }}
 
                     >
-                        {countries.map((c) => (
-                            <MenuItem key={c} value={c}>
-                                {c}
+                        {regions?.map((c) => (
+                            <MenuItem key={'region' + c.id} value={c.countryName}>
+                                {c.countryName}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -171,19 +195,49 @@ const FormBuild = ({ isEdit }) => {
                         fullWidth
                         disabled={country === ""}
                         label="Brand"
-                        value={brand}
-                        onChange={(e) => setBrand(e.target.value)}
+                        value={brand?.name || ""}
+                        onChange={(e) => {
+                            const brand = brands?.filter((val) => val.name == e.target.value);
+                            setBrand(brand[0]);
+                            fetchWebsites({ brandId: brand[0].id });
+                        }}
                         // size="small"
                         sx={{
-                            width: { xs: "100%", sm: 220 }, 
+                            width: { xs: "100%", sm: 220 },
                             minWidth: 160,
                             backgroundColor: 'white'
                         }}
 
                     >
-                        {brands.map((b) => (
-                            <MenuItem key={b.id} value={b.name}>
+                        {brands?.map((b) => (
+                            <MenuItem key={'brans' + b.id} value={b.name}>
                                 {b.name}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                </Grid>
+                <Grid item xs={12} sm={6} md={4}>
+                    <TextField
+                        select
+                        fullWidth
+                        label="Website"
+                        disabled={brand === ""}
+                        value={website?.name || ''}
+                        onChange={(e) => {
+                            const website = websites.filter((val) => (val.name===e.target.value))
+                            setWebsite(website[0]);
+
+                        }}
+                        sx={{
+                            width: { xs: "100%", sm: 220 },
+                            minWidth: 160,
+                            backgroundColor: "white"
+                        }}
+
+                    >
+                        {websites?.map((c) => (
+                            <MenuItem key={'region' + c.id} value={c.name}>
+                                {c.name}
                             </MenuItem>
                         ))}
                     </TextField>
@@ -203,7 +257,7 @@ const FormBuild = ({ isEdit }) => {
                 <Button variant="contained" color="primary" type="submit">
                     {isEdit ? 'Update Form' : 'Save Form'}
                 </Button>
-                
+
             </Box>
 
             <Dialog open={dialogueOpen} onClose={handleDialogueClose}>

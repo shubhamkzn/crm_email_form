@@ -8,7 +8,8 @@ import {
   getAllTemplate,
   routeDeleteTemplate,
   copyTemplate,
-  addBrandController ,
+  addBrandController, 
+  getBrandsByRegionController,
 } from "../controllers/emailController.js";
 
 const router = express.Router();
@@ -21,6 +22,8 @@ router.get("/getdata/:brand", getBrandDataController);
 
 // GET /brands (fetch all brands)
 router.get("/brands", getAllBrandsController);
+
+router.get('/brands/:regionId',getBrandsByRegionController)
 
 router.post("/brands", addBrandController);
 

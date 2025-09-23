@@ -14,6 +14,7 @@ import {
   updateTemplateData,
   getOneTemplate,
   addBrand,
+  getBrandByRegion,
 } from "../models/emailModel.js";
 import { nanoid } from "nanoid";
 
@@ -47,7 +48,7 @@ export const sendEmailController = async (req, res) => {
     const subject = parsedConfig.subject;
     console.log(html);
     // 4. Send email
-     await sendMail({
+    await sendMail({
       to: toEmail,
       subject,
       text: "See HTML version",
@@ -56,10 +57,10 @@ export const sendEmailController = async (req, res) => {
 
     // 5. Ensure brand exists
     if (brand) {
-     const obj= await getBrandByNameOrCreate(brand);
+      const obj = await getBrandByNameOrCreate(brand);
       await ensureBrandTableExists(`${obj.log_table}`);
       await logEmail({
-        tableName:`${obj.log_table}`,
+        tableName: `${obj.log_table}`,
         toEmail,
         subject,
         body: finalHtml,
@@ -102,12 +103,12 @@ export const getBrandDataController = async (req, res) => {
 // -------------------- ADD BRAND --------------------
 export const addBrandController = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, countryId } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ error: "Brand name is required" });
     }
 
-    const newBrand = await addBrand(name.trim());
+    const newBrand = await addBrand({ name: name.trim(), countryId });
     res.status(201).json(newBrand);
   } catch (error) {
     console.error("addBrandController Error:", error);
@@ -125,6 +126,20 @@ export const getAllBrandsController = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+// --------------------get brand by country ----------------------=
+export const getBrandsByRegionController = async (req, res) => {
+  try {
+    const regionId = req.params.regionId;
+    const brands = await getBrandByRegion({ regionId });
+    res.json(brands);
+  }
+  catch (error) {
+    console.error("getBrandsByCountryController Error:", error);
+    res.status(500).json({ error: error.message });
+  }
+
+}
 
 // -------------------- GENERATE UNIQUE ID --------------------
 export const getUniqueID = async (req, res) => {
