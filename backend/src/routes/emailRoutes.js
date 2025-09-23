@@ -10,6 +10,8 @@ import {
   copyTemplate,
   addBrandController, 
   getBrandsByRegionController,
+  addBrandController ,
+  getUniqueIDForm,
 } from "../controllers/emailController.js";
 
 const router = express.Router();
@@ -29,6 +31,7 @@ router.post("/brands", addBrandController);
 
 
 router.get("/uniqueid",getUniqueID);
+router.get("/uniqueidform",getUniqueIDForm);
 
 router.post("/savetemplate",saveTemplate)
 

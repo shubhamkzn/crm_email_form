@@ -59,7 +59,7 @@ const Form = {
     const createTableSQL = `
       CREATE TABLE \`${tableName}\` (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        ${columns.join(",\n")},
+        ${columns.join(",\n")},A
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
@@ -70,13 +70,24 @@ const Form = {
     return result.insertId;
   },
 
-  findAll: async () => {
-    const db = await getConnection();
-    const [rows] = await db.query(
-      "SELECT id, name, country, brand FROM form_schema"
-    );
-    return rows;
-  },
+findAll: async ({ page = 1, limit = 10 }) => {
+  const db = await getConnection();
+
+  const offset = (page - 1) * limit;
+
+  // Get total count
+  const [[{ total }]] = await db.query(
+    "SELECT COUNT(*) AS total FROM form_schema"
+  );
+
+  // Get paginated rows
+  const [rows] = await db.query(
+    "SELECT id, name, country, brand FROM form_schema LIMIT ? OFFSET ?",
+    [parseInt(limit), parseInt(offset)]
+  );
+
+  return { total, page, totalPages: Math.ceil(total / limit), rows };
+},
 
   findById: async (id) => {
     const db = await getConnection();
@@ -134,7 +145,12 @@ const Form = {
       console.log("No row found with given id");
       return false;
     }
-  }
+  },
+
+ 
+
 };
+
+
 
 export default Form;
