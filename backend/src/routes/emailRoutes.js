@@ -21,6 +21,7 @@ router.get("/getdata/:brand", getBrandDataController);
 
 // GET /brands (fetch all brands)
 router.get("/brands", getAllBrandsController);
+
 router.post("/brands", addBrandController);
 
 

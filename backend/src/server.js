@@ -18,13 +18,17 @@ const __dirname = path.resolve();
 app.use(express.json());
 app.use(cookieParser());
 
+// Allow any origin with credentials
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL,
+    origin: (origin, callback) => {
+      callback(null, true); // allow any origin
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
   })
 );
+
 
 const startServer = async () => {
   try {

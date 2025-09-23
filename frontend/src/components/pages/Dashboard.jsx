@@ -54,7 +54,8 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-950 dark:to-slate-900 transition-colors duration-300">
       {/* Navbar */}
-      <Navbar />
+         {/* <Navbar /> */}
+
 
       {/* Main Content */}
       <main className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">

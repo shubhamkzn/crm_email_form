@@ -60,7 +60,8 @@ const History = () => {
 
   return (
     <div className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen transition-colors duration-300">
-      <Navbar />
+         {/* <Navbar /> */}
+
 
       <div className="p-6 max-w-7xl mx-auto">
         {/* Header Card */}

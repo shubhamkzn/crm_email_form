@@ -9,11 +9,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import config from "../config";
 
 const countries = ["USA", "Australia"];
-const brands = ['A', 'B', 'C'];
+// const brands = ['A', 'B', 'C'];
 
 
 const FormBuild = ({ isEdit }) => {
     const [formName, setFormName] = useState('');
+      const [brands, setBrands] = useState([]);
+    
     const [country, setCountry] = useState('');
     const [brand, setBrand] = useState('');
     const [schema, setSchema] = useState({ components: [] });
@@ -24,6 +26,19 @@ const FormBuild = ({ isEdit }) => {
 
     const navigate = useNavigate();
     const builderRef = useRef()
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/email/brands");
+        const data = await res.json();
+        setBrands(data);
+      } catch (err) {
+        console.error("Error fetching brands:", err);
+      }
+    };
+    fetchBrands();
+  }, []);
 
 
     async function saveForm(payload) {
@@ -167,8 +182,8 @@ const FormBuild = ({ isEdit }) => {
 
                     >
                         {brands.map((b) => (
-                            <MenuItem key={b} value={b}>
-                                {b}
+                            <MenuItem key={b.id} value={b.name}>
+                                {b.name}
                             </MenuItem>
                         ))}
                     </TextField>
