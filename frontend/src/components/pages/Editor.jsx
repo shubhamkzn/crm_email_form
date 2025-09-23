@@ -43,7 +43,7 @@ export default function EmailBuilder() {
   // State
   const [emailConfig, setEmailConfig] = useState({
     templateId: templateId,
-    brand: '',
+    FormId: '',
     to: '',
     cc: '',
     bcc: '',
@@ -123,20 +123,20 @@ export default function EmailBuilder() {
   }, []);
 
   // Fetch brands
-  useEffect(() => {
-    const fetchBrands = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/email/brands`);
-        if (!res.ok) throw new Error("Failed to fetch brands");
-        const data = await res.json();
-        setBrands(data);
-      } catch (err) {
-        console.error(err);
-        showNotification("error", "Failed to load brands");
-      }
-    };
-    fetchBrands();
-  }, [showNotification]);
+  // useEffect(() => {
+  //   const fetchBrands = async () => {
+  //     try {
+  //       const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/email/brands`);
+  //       if (!res.ok) throw new Error("Failed to fetch brands");
+  //       const data = await res.json();
+  //       setBrands(data);
+  //     } catch (err) {
+  //       console.error(err);
+  //       showNotification("error", "Failed to load brands");
+  //     }
+  //   };
+  //   fetchBrands();
+  // }, [showNotification]);
 
   // Handle template data from location state
   useEffect(() => {
@@ -172,29 +172,29 @@ export default function EmailBuilder() {
   }, []);
 
   // Add brand
-  const addNewBrand = useCallback(async () => {
-    if (newBrandName.trim()) {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/email/brands`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: newBrandName.trim() }),
-        });
+  // const addNewBrand = useCallback(async () => {
+  //   if (newBrandName.trim()) {
+  //     try {
+  //       const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/email/brands`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ name: newBrandName.trim() }),
+  //       });
 
-        if (!res.ok) throw new Error("Failed to add brand");
-        const brand = await res.json();
+  //       if (!res.ok) throw new Error("Failed to add brand");
+  //       const brand = await res.json();
 
-        setBrands((prev) => [...prev, brand]);
-        setEmailConfig((prev) => ({ ...prev, brand: brand.name }));
-        setNewBrandName("");
-        setShowBrandModal(false);
-        showNotification("success", "Brand added");
-      } catch (err) {
-        console.error(err);
-        showNotification("error", "Failed to add brand");
-      }
-    }
-  }, [newBrandName, setEmailConfig, showNotification]);
+  //       setBrands((prev) => [...prev, brand]);
+  //       setEmailConfig((prev) => ({ ...prev, brand: brand.name }));
+  //       setNewBrandName("");
+  //       setShowBrandModal(false);
+  //       showNotification("success", "Brand added");
+  //     } catch (err) {
+  //       console.error(err);
+  //       showNotification("error", "Failed to add brand");
+  //     }
+  //   }
+  // }, [newBrandName, setEmailConfig, showNotification]);
 
   // History management
   const addToHistory = useCallback((content) => {
@@ -859,117 +859,105 @@ export default function EmailBuilder() {
                 Email Configuration
               </h3>
 
-              <div className="space-y-4">
-                {/* Brand */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Brand</label>
-                  <div className="relative">
-                    <select
-                      value={emailConfig.brand}
-                      onChange={(e) => {
-                        if (e.target.value === 'add-new') {
-                          setShowBrandModal(true);
-                        } else {
-                          setEmailConfig(prev => ({ ...prev, brand: e.target.value }));
-                        }
-                      }}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                    >
-                      <option value="">Select Brand</option>
-                      {brands.map(brand => (
-                        <option key={brand.id} value={brand.name}>{brand.name}</option>
-                      ))}
-                      <option value="add-new" className="font-medium">+ Add New Brand</option>
-                    </select>
-                    <ChevronDown className="absolute right-3 top-2.5 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
+             <div className="space-y-4">
+  {/* Brand */}
+  <div>
+    <label className="block text-xs font-medium text-gray-700 mb-1.5">FormId</label>
+    <input
+      type="text"
+      value={emailConfig.FormId}
+      onChange={(e) => setEmailConfig(prev => ({ ...prev, FormId: e.target.value }))}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      placeholder="Enter brand name"
+    />
+  </div>
 
-                {/* Subject */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Subject *</label>
-                  <input
-                    type="text"
-                    value={emailConfig.subject}
-                    onChange={(e) => setEmailConfig(prev => ({ ...prev, subject: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter subject line"
-                  />
-                </div>
+  {/* Subject */}
+  <div>
+    <label className="block text-xs font-medium text-gray-700 mb-1.5">Subject *</label>
+    <input
+      type="text"
+      value={emailConfig.subject}
+      onChange={(e) => setEmailConfig(prev => ({ ...prev, subject: e.target.value }))}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      placeholder="Enter subject line"
+    />
+  </div>
 
-                {/* From Fields */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">From Name *</label>
-                    <input
-                      type="text"
-                      value={emailConfig.fromName}
-                      onChange={(e) => setEmailConfig(prev => ({ ...prev, fromName: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="John Doe"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">From Email *</label>
-                    <input
-                      type="email"
-                      value={emailConfig.fromEmail}
-                      onChange={(e) => setEmailConfig(prev => ({ ...prev, fromEmail: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="john@example.com"
-                    />
-                  </div>
-                </div>
+  {/* From Fields */}
+  <div className="grid grid-cols-2 gap-3">
+    <div>
+      <label className="block text-xs font-medium text-gray-700 mb-1.5">From Name *</label>
+      <input
+        type="text"
+        value={emailConfig.fromName}
+        onChange={(e) => setEmailConfig(prev => ({ ...prev, fromName: e.target.value }))}
+        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="John Doe"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-medium text-gray-700 mb-1.5">From Email *</label>
+      <input
+        type="email"
+        value={emailConfig.fromEmail}
+        onChange={(e) => setEmailConfig(prev => ({ ...prev, fromEmail: e.target.value }))}
+        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="john@example.com"
+      />
+    </div>
+  </div>
 
-                {/* Reply To */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Reply To</label>
-                  <input
-                    type="email"
-                    value={emailConfig.replyTo}
-                    onChange={(e) => setEmailConfig(prev => ({ ...prev, replyTo: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="reply@example.com"
-                  />
-                </div>
+  {/* Reply To */}
+  <div>
+    <label className="block text-xs font-medium text-gray-700 mb-1.5">Reply To</label>
+    <input
+      type="email"
+      value={emailConfig.replyTo}
+      onChange={(e) => setEmailConfig(prev => ({ ...prev, replyTo: e.target.value }))}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      placeholder="reply@example.com"
+    />
+  </div>
 
-                {/* To */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1.5">To *</label>
-                  <input
-                    type="text"
-                    value={emailConfig.to}
-                    onChange={(e) => setEmailConfig(prev => ({ ...prev, to: e.target.value }))}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="recipient@example.com"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Separate multiple emails with commas</p>
-                </div>
+  {/* To */}
+  <div>
+    <label className="block text-xs font-medium text-gray-700 mb-1.5">To *</label>
+    <input
+      type="text"
+      value={emailConfig.to}
+      onChange={(e) => setEmailConfig(prev => ({ ...prev, to: e.target.value }))}
+      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+      placeholder="recipient@example.com"
+    />
+    <p className="text-xs text-gray-500 mt-1">Separate multiple emails with commas</p>
+  </div>
 
-                {/* CC & BCC */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">CC</label>
-                    <input
-                      type="text"
-                      value={emailConfig.cc}
-                      onChange={(e) => setEmailConfig(prev => ({ ...prev, cc: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="cc@example.com"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1.5">BCC</label>
-                    <input
-                      type="text"
-                      value={emailConfig.bcc}
-                      onChange={(e) => setEmailConfig(prev => ({ ...prev, bcc: e.target.value }))}
-                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="bcc@example.com"
-                    />
-                  </div>
-                </div>
-              </div>
+  {/* CC & BCC */}
+  <div className="grid grid-cols-2 gap-3">
+    <div>
+      <label className="block text-xs font-medium text-gray-700 mb-1.5">CC</label>
+      <input
+        type="text"
+        value={emailConfig.cc}
+        onChange={(e) => setEmailConfig(prev => ({ ...prev, cc: e.target.value }))}
+        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="cc@example.com"
+      />
+    </div>
+    <div>
+      <label className="block text-xs font-medium text-gray-700 mb-1.5">BCC</label>
+      <input
+        type="text"
+        value={emailConfig.bcc}
+        onChange={(e) => setEmailConfig(prev => ({ ...prev, bcc: e.target.value }))}
+        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        placeholder="bcc@example.com"
+      />
+    </div>
+  </div>
+</div>
+
             </div>
 
             {/* Actions */}
@@ -1487,43 +1475,7 @@ export default function EmailBuilder() {
         </div>
       )}
 
-      {/* Brand Modal */}
-      {showBrandModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-6 z-50">
-          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New Brand</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Brand Name</label>
-                <input
-                  type="text"
-                  value={newBrandName}
-                  onChange={(e) => setNewBrandName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter brand name"
-                />
-              </div>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => {
-                    setShowBrandModal(false);
-                    setNewBrandName('');
-                  }}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={addNewBrand}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Add Brand
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
 
       {/* Notification Toast */}
       {notification && (

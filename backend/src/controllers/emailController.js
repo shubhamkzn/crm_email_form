@@ -136,6 +136,15 @@ export const getUniqueID = async (req, res) => {
     res.status(500).json({ error: "Failed to generate ID" });
   }
 };
+export const getUniqueIDForm = async (req, res) => {
+  try {
+    const uniqueId = "form_" + nanoid(8);
+    res.json({ id: uniqueId });
+  } catch (error) {
+    console.error("getUniqueID Error:", error);
+    res.status(500).json({ error: "Failed to generate ID" });
+  }
+};
 
 // -------------------- SAVE / UPDATE TEMPLATE --------------------
 export const saveTemplate = async (req, res) => {

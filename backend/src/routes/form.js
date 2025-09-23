@@ -16,11 +16,12 @@ route.post("/create", async (req, res) => {
 
 route.get("/all", async (req, res) => {
   try {
-    const data = await Form.findAll();
-    res.send(data);
+    const { page = 1, limit = 10 } = req.query;
+    const data = await Form.findAll({ page: parseInt(page), limit: parseInt(limit) });
+    res.json(data);
   } catch (e) {
-    res.status(500);
-    console.log(e);
+    console.error("Error in /all:", e);
+    res.status(500).json({ error: "Server error" });
   }
 });
 
@@ -65,4 +66,8 @@ route.delete("/:id", async (req, res) => {
   }
 });
 
+
+
+
 export default route;
+// Backend API endpoint (e.g., routes/forms.js or similar)
