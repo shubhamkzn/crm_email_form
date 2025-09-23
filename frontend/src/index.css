@@ -1,0 +1,50 @@
+/* Solution 1: Add !important to critical Tailwind utilities */
+/* Add this to your main CSS file after importing Tailwind */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Force Tailwind dark mode utilities to override Bootstrap */
+.darkCustom .bg-slate-900 {
+  background-color: rgb(15 23 42) !important;
+}
+
+.darkCustom .text-white {
+  color: rgb(255 255 255) !important;
+}
+
+.darkCustom .border-slate-800 {
+  border-color: rgb(30 41 59) !important;
+}
+
+/* Add more specific overrides as needed */
+
+/* Solution 2: Increase specificity with custom CSS */
+html.darkCustom body .bg-white {
+  background-color: rgb(15 23 42) !important;
+}
+
+html.darkCustom body .text-black,
+html.darkCustom body .text-slate-900 {
+  color: rgb(255 255 255) !important;
+}
+
+html.darkCustom body .border-slate-200 {
+  border-color: rgb(30 41 59) !important;
+}
+
+/* Solution 3: Create utility classes with higher specificity */
+@layer utilities {
+  .dark-bg-slate-900 {
+    background-color: rgb(15 23 42) !important;
+  }
+  
+  .dark-text-white {
+    color: rgb(255 255 255) !important;
+  }
+  
+  .dark-border-slate-800 {
+    border-color: rgb(30 41 59) !important;
+  }
+}

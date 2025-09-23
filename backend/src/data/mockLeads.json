@@ -1,0 +1,352 @@
+[
+  {
+    "id": 1,
+    "platform": "LinkedIn",
+    "campaign": "Launch",
+    "date": "2023-01-29",
+    "leads": 160
+  },
+  {
+    "id": 2,
+    "platform": "Google",
+    "campaign": "Awareness",
+    "date": "2023-03-30",
+    "leads": 780
+  },
+  {
+    "id": 3,
+    "platform": "Instagram",
+    "campaign": "Conversion",
+    "date": "2023-06-02",
+    "leads": 498
+  },
+  {
+    "id": 4,
+    "platform": "Instagram",
+    "campaign": "Launch",
+    "date": "2024-08-03",
+    "leads": 319
+  },
+  {
+    "id": 5,
+    "platform": "Instagram",
+    "campaign": "Promo",
+    "date": "2023-12-27",
+    "leads": 103
+  },
+  {
+    "id": 6,
+    "platform": "LinkedIn",
+    "campaign": "Promo",
+    "date": "2023-04-25",
+    "leads": 239
+  },
+  {
+    "id": 7,
+    "platform": "Facebook",
+    "campaign": "Conversion",
+    "date": "2024-06-01",
+    "leads": 383
+  },
+  {
+    "id": 8,
+    "platform": "Google",
+    "campaign": "Promo",
+    "date": "2023-09-25",
+    "leads": 236
+  },
+  {
+    "id": 9,
+    "platform": "Google",
+    "campaign": "Awareness",
+    "date": "2023-12-29",
+    "leads": 226
+  },
+  {
+    "id": 10,
+    "platform": "LinkedIn",
+    "campaign": "Promo",
+    "date": "2024-03-20",
+    "leads": 362
+  },
+  {
+    "id": 11,
+    "platform": "Google",
+    "campaign": "Promo",
+    "date": "2024-12-28",
+    "leads": 433
+  },
+  {
+    "id": 12,
+    "platform": "Instagram",
+    "campaign": "Launch",
+    "date": "2024-09-14",
+    "leads": 620
+  },
+  {
+    "id": 13,
+    "platform": "Google",
+    "campaign": "Awareness",
+    "date": "2023-07-14",
+    "leads": 417
+  },
+  {
+    "id": 14,
+    "platform": "LinkedIn",
+    "campaign": "Promo",
+    "date": "2024-01-29",
+    "leads": 686
+  },
+  {
+    "id": 15,
+    "platform": "LinkedIn",
+    "campaign": "Promo",
+    "date": "2024-06-23",
+    "leads": 744
+  },
+  {
+    "id": 16,
+    "platform": "LinkedIn",
+    "campaign": "Launch",
+    "date": "2024-06-12",
+    "leads": 586
+  },
+  {
+    "id": 17,
+    "platform": "Instagram",
+    "campaign": "Promo",
+    "date": "2023-10-01",
+    "leads": 577
+  },
+  {
+    "id": 18,
+    "platform": "Google",
+    "campaign": "Conversion",
+    "date": "2024-02-23",
+    "leads": 173
+  },
+  {
+    "id": 19,
+    "platform": "Instagram",
+    "campaign": "Promo",
+    "date": "2024-06-27",
+    "leads": 706
+  },
+  {
+    "id": 20,
+    "platform": "Facebook",
+    "campaign": "Launch",
+    "date": "2023-08-24",
+    "leads": 813
+  },
+  {
+    "id": 21,
+    "platform": "Google",
+    "campaign": "Awareness",
+    "date": "2024-11-28",
+    "leads": 675
+  },
+  {
+    "id": 22,
+    "platform": "LinkedIn",
+    "campaign": "Awareness",
+    "date": "2024-01-30",
+    "leads": 201
+  },
+  {
+    "id": 23,
+    "platform": "Facebook",
+    "campaign": "Conversion",
+    "date": "2024-01-21",
+    "leads": 972
+  },
+  {
+    "id": 24,
+    "platform": "Instagram",
+    "campaign": "Awareness",
+    "date": "2024-01-07",
+    "leads": 703
+  },
+  {
+    "id": 25,
+    "platform": "Facebook",
+    "campaign": "Awareness",
+    "date": "2024-01-25",
+    "leads": 275
+  },
+  {
+    "id": 26,
+    "platform": "LinkedIn",
+    "campaign": "Awareness",
+    "date": "2024-03-03",
+    "leads": 405
+  },
+  {
+    "id": 27,
+    "platform": "Instagram",
+    "campaign": "Awareness",
+    "date": "2023-06-23",
+    "leads": 814
+  },
+  {
+    "id": 28,
+    "platform": "Instagram",
+    "campaign": "Awareness",
+    "date": "2024-01-11",
+    "leads": 582
+  },
+  {
+    "id": 29,
+    "platform": "Instagram",
+    "campaign": "Awareness",
+    "date": "2024-10-21",
+    "leads": 884
+  },
+  {
+    "id": 30,
+    "platform": "Instagram",
+    "campaign": "Conversion",
+    "date": "2023-06-19",
+    "leads": 600
+  },
+  {
+    "id": 31,
+    "platform": "Google",
+    "campaign": "Promo",
+    "date": "2024-02-25",
+    "leads": 400
+  },
+  {
+    "id": 32,
+    "platform": "Google",
+    "campaign": "Awareness",
+    "date": "2024-10-26",
+    "leads": 661
+  },
+  {
+    "id": 33,
+    "platform": "Instagram",
+    "campaign": "Conversion",
+    "date": "2024-03-25",
+    "leads": 474
+  },
+  {
+    "id": 34,
+    "platform": "Facebook",
+    "campaign": "Launch",
+    "date": "2023-12-19",
+    "leads": 78
+  },
+  {
+    "id": 35,
+    "platform": "Google",
+    "campaign": "Launch",
+    "date": "2024-02-17",
+    "leads": 528
+  },
+  {
+    "id": 36,
+    "platform": "Facebook",
+    "campaign": "Awareness",
+    "date": "2024-05-20",
+    "leads": 822
+  },
+  {
+    "id": 37,
+    "platform": "Google",
+    "campaign": "Conversion",
+    "date": "2023-09-04",
+    "leads": 422
+  },
+  {
+    "id": 38,
+    "platform": "LinkedIn",
+    "campaign": "Promo",
+    "date": "2023-06-17",
+    "leads": 425
+  },
+  {
+    "id": 39,
+    "platform": "LinkedIn",
+    "campaign": "Promo",
+    "date": "2024-01-15",
+    "leads": 678
+  },
+  {
+    "id": 40,
+    "platform": "Facebook",
+    "campaign": "Conversion",
+    "date": "2023-07-02",
+    "leads": 597
+  },
+  {
+    "id": 41,
+    "platform": "Facebook",
+    "campaign": "Awareness",
+    "date": "2023-07-29",
+    "leads": 708
+  },
+  {
+    "id": 42,
+    "platform": "Instagram",
+    "campaign": "Launch",
+    "date": "2024-04-16",
+    "leads": 766
+  },
+  {
+    "id": 43,
+    "platform": "Facebook",
+    "campaign": "Awareness",
+    "date": "2023-06-30",
+    "leads": 710
+  },
+  {
+    "id": 44,
+    "platform": "Instagram",
+    "campaign": "Conversion",
+    "date": "2023-10-21",
+    "leads": 825
+  },
+  {
+    "id": 45,
+    "platform": "Instagram",
+    "campaign": "Conversion",
+    "date": "2024-02-25",
+    "leads": 826
+  },
+  {
+    "id": 46,
+    "platform": "LinkedIn",
+    "campaign": "Awareness",
+    "date": "2023-06-12",
+    "leads": 435
+  },
+  {
+    "id": 47,
+    "platform": "Instagram",
+    "campaign": "Launch",
+    "date": "2023-08-08",
+    "leads": 13
+  },
+  {
+    "id": 48,
+    "platform": "LinkedIn",
+    "campaign": "Launch",
+    "date": "2023-12-11",
+    "leads": 324
+  },
+  {
+    "id": 49,
+    "platform": "Google",
+    "campaign": "Promo",
+    "date": "2023-10-04",
+    "leads": 649
+  },
+  {
+    "id": 50,
+    "platform": "Google",
+    "campaign": "Conversion",
+    "date": "2024-03-05",
+    "leads": 835
+  }
+]
