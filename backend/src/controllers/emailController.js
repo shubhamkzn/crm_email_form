@@ -42,11 +42,11 @@ export const sendEmailController = async (req, res) => {
     const formId = await getFormIdByTemplateId(templateId);
     if (!formId) return res.status(404).json({ error: "No form linked to this template" });
 
-    // Fetch form details with names
+    // Fetch form details
     const form = await getFormDetailsWithNames(formId);
     if (!form) return res.status(404).json({ error: "Form not found" });
 
-    // Replace placeholders
+    // Replace placeholders in HTML
     let finalHtml = html;
     for (const [key, value] of Object.entries(data)) {
       const regex = new RegExp(`{{\\s*${key}\\s*}}`, "g");
@@ -55,13 +55,25 @@ export const sendEmailController = async (req, res) => {
 
     // Parse config
     const parsedConfig = typeof config === "string" ? JSON.parse(config) : config;
-    const toEmail = parsedConfig.to;
-    const subject = parsedConfig.subject;
+
+    // Auto-fill missing 'to' and 'subject'
+    const toEmail = parsedConfig.to || process.env.DEFAULT_TO_EMAIL || "fallback@example.com";
+    const subject = parsedConfig.subject || "New Form Submission";
+
+    // Optional: auto-fill missing placeholders like currentYear
+    if (!data.currentYear) {
+      finalHtml = finalHtml.replace(/{{\s*currentYear\s*}}/g, new Date().getFullYear());
+    }
 
     // Send email
-    await sendMail({ to: toEmail, subject, text: "See HTML version", html: finalHtml });
+    await sendMail({
+      to: toEmail,
+      subject,
+      text: "See HTML version",
+      html: finalHtml
+    });
 
-    // Insert into master email log
+    // Log email
     await insertEmailMasterLog({
       form_id: formId,
       template_id: templateId,

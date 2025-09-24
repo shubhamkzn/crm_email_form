@@ -43,6 +43,7 @@ const App = () => {
         <Route path="/templates/build" element={<BuildTemplates />} />
         <Route path="/templates/existing" element={<AllTemplates />} />
         <Route path="/test" element={<EmailBuilder/>} />
+        
         {/* <Route path="/seeAllData" element={<SeeAllData/>} /> */}
 
       </Route>
