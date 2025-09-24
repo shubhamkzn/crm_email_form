@@ -10,7 +10,6 @@ import {
   copyTemplate,
   addBrandController, 
   getBrandsByRegionController,
-  addBrandController ,
   getUniqueIDForm,
 } from "../controllers/emailController.js";
 

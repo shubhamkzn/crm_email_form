@@ -5,8 +5,8 @@ const route = express.Router();
 
 route.post("/create", async (req, res) => {
   try {
-    const { name, schema, country, brand } = req.body;
-    await Form.create({ name, schema, country, brand });
+    const { formId,pageName, schema, regionId, brandId,websiteId } = req.body;
+    await Form.create({ formId,pageName, schema, regionId, brandId,websiteId });
     res.send({ message: "completed" });
   } catch (e) {
     res.status(500);
@@ -27,8 +27,8 @@ route.get("/all", async (req, res) => {
 
 route.get("/:id", async (req, res) => {
   try {
-    const id = req.params.id;
-    const form = await Form.findById(id);
+    const formId = req.params.id;
+    const form = await Form.findById(formId);
     res.send(form);
   } catch (e) {
     res.status(500);
@@ -38,8 +38,8 @@ route.get("/:id", async (req, res) => {
 
 route.put("/edit", async (req, res) => {
   try {
-    const { id, name, brand, country, schema } = req.body;
-    const result = await Form.editById({ id, name, brand, country, schema });
+    const { formId, schema, page_name } = req.body;
+    const result = await Form.editById({ formId, schema, page_name });
     if (result.affectedRows > 0 && result.changedRows > 0) {
       res.send({ message: "updated successfully" });
     } else {
@@ -53,8 +53,8 @@ route.put("/edit", async (req, res) => {
 
 route.delete("/:id", async (req, res) => {
   try {
-    const id = req.params.id;
-    const isDeleted = await Form.deleteById({ id });
+    const formId = req.params.id;
+    const isDeleted = await Form.deleteById({ formId });
     if (isDeleted) {
       res.send({ message: "Deleted successfully" });
     } else {

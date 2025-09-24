@@ -1,3 +1,4 @@
+import { json } from "express";
 import { getConnection } from "../lib/db.js";
 
 function mapFormioTypeToMySQL(type) {
@@ -32,15 +33,14 @@ function flattenComponents(components) {
 }
 
 const Form = {
-  create: async ({ name, schema, country, brand }) => {
+  create: async ({ formId, pageName, schema, regionId, brandId, websiteId }) => {
     const db = await getConnection(); // ✅ ensure connection
 
     const [result] = await db.query(
-      "INSERT INTO form_schema (name, form_schema, country, brand) VALUES (?, ?, ?, ?)",
-      [name, JSON.stringify(schema), country, brand]
+      "INSERT INTO forms (form_id, region_id, brand_id, website_id, form_schema, page_name) VALUES (?, ?, ?,?,?, ?)",
+      [formId, regionId, brandId, websiteId, JSON.stringify(schema), pageName]
     );
 
-    const formId = result.insertId;
     const tableName = `form_${formId}_submissions`;
 
     const allComponents = flattenComponents(schema.components);
@@ -59,7 +59,7 @@ const Form = {
     const createTableSQL = `
       CREATE TABLE \`${tableName}\` (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        ${columns.join(",\n")},A
+        ${columns.join(",\n")},
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `;
@@ -70,43 +70,66 @@ const Form = {
     return result.insertId;
   },
 
-findAll: async ({ page = 1, limit = 10 }) => {
-  const db = await getConnection();
+  findAll: async ({ page = 1, limit = 10 }) => {
+    const db = await getConnection();
 
-  const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-  // Get total count
-  const [[{ total }]] = await db.query(
-    "SELECT COUNT(*) AS total FROM form_schema"
-  );
+    // Get total count
+    const [[{ total }]] = await db.query(
+      "SELECT COUNT(*) AS total FROM forms"
+    );
 
-  // Get paginated rows
-  const [rows] = await db.query(
-    "SELECT id, name, country, brand FROM form_schema LIMIT ? OFFSET ?",
-    [parseInt(limit), parseInt(offset)]
-  );
+    // Get paginated rows
+    const [rows] = await db.query(
+      `SELECT 
+    f.form_id,
+    f.page_name,
+    f.created_at,
+    b.name AS brand_name,
+    r.countryName
+FROM forms f
+JOIN brands b 
+    ON f.brand_id = b.id
+JOIN region r 
+    ON f.region_id = r.id;
+`,
+      [parseInt(limit), parseInt(offset)]
+    );
+    console.log(rows)
 
-  return { total, page, totalPages: Math.ceil(total / limit), rows };
-},
+    return { total, page, totalPages: Math.ceil(total / limit), rows };
+  },
 
-  findById: async (id) => {
+  findById: async (formId) => {
     const db = await getConnection();
     const [rows] = await db.query(
-      "SELECT * FROM form_schema WHERE id = ?",
-      [id]
+      `SELECT 
+    f.form_schema,
+    f.page_name,
+    b.name AS brand_name,
+    r.countryName
+FROM forms f
+JOIN brands b 
+    ON f.brand_id = b.id
+JOIN region r 
+    ON f.region_id = r.id
+WHERE f.form_id = ?;
+`,
+      [formId]
     );
     return rows[0];
   },
 
-  editById: async ({ id, schema, name, country, brand }) => {
+  editById: async ({ formId, schema, page_name }) => {
     const db = await getConnection();
 
     const [result] = await db.query(
-      "UPDATE form_schema SET form_schema = ?, name = ?, country = ?, brand = ? WHERE id = ?",
-      [JSON.stringify(schema), name, country, brand, id]
+      "UPDATE forms SET form_schema = ?, page_name = ? WHERE form_id = ?",
+      [JSON.stringify(schema), page_name, formId]
     );
 
-    const tableName = `form_${id}_submissions`;
+    const tableName = `form_${formId}_submissions`;
     const [rows] = await db.query(
       `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
        WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
@@ -130,12 +153,12 @@ findAll: async ({ page = 1, limit = 10 }) => {
     return result;
   },
 
-  deleteById: async ({ id }) => {
+  deleteById: async ({ formId }) => {
     const db = await getConnection();
 
     const [result] = await db.query(
-      "DELETE FROM form_schema WHERE id = ?",
-      [id]
+      "DELETE FROM forms WHERE form_id = ?",
+      [formId]
     );
 
     if (result.affectedRows > 0) {
@@ -147,7 +170,7 @@ findAll: async ({ page = 1, limit = 10 }) => {
     }
   },
 
- 
+
 
 };
 

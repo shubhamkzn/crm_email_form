@@ -28,6 +28,7 @@ const Home = () => {
       );
       
       const responseData = res.data;
+      console.log(responseData);
       const data = responseData.rows || [];
       setForms(data);
       setHasNextPage(page < responseData.totalPages);
@@ -47,8 +48,8 @@ const Home = () => {
   const handlePrev = () => fetchForms(currentPage - 1);
   const handleNext = () => fetchForms(currentPage + 1);
 
-  const handleView = (form) => (window.location.href = `/forms/${form.id}`);
-  const handleEdit = (form) => (window.location.href = `/forms/edit/${form.id}`);
+  const handleView = (form) => (window.location.href = `/forms/${form.form_id}`);
+  const handleEdit = (form) => (window.location.href = `/forms/edit/${form.form_id}`);
   const handleDelete = async (formId) => {
     if (!confirm("Are you sure you want to delete this form?")) return;
     try {
@@ -98,25 +99,25 @@ const Home = () => {
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                         <span className="text-white font-semibold text-lg">
-                          {form.name?.charAt(0)?.toUpperCase() || 'F'}
+                          {form.page_name?.charAt(0)?.toUpperCase() || 'F'}
                         </span>
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          {form.name || 'Untitled Form'}
+                          {form.page_name || 'Untitled Form'}
                         </h3>
                         <div className="flex items-center space-x-4 mt-2">
                           <div className="flex items-center space-x-1">
                             <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">Country:</span>
                             <span className="text-sm text-gray-600 dark:text-gray-300">
-                              {form.country || 'Not specified'}
+                              {form.countryName || 'Not specified'}
                             </span>
                           </div>
                           <span className="text-gray-300 dark:text-gray-600">•</span>
                           <div className="flex items-center space-x-1">
                             <span className="text-xs font-medium text-gray-400 dark:text-gray-500 uppercase">Brand:</span>
                             <span className="text-sm text-gray-600 dark:text-gray-300">
-                              {form.brand || 'Not specified'}
+                              {form.brand_name || 'Not specified'}
                             </span>
                           </div>
                         </div>
@@ -139,7 +140,7 @@ const Home = () => {
                         Edit
                       </button>
                       <button
-                        onClick={() => handleDelete(form.id)}
+                        onClick={() => handleDelete(form.form_id)}
                         className="inline-flex items-center px-3 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors duration-200"
                       >
                         <Trash2 className="w-4 h-4 mr-2" />

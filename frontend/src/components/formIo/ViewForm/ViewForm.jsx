@@ -17,9 +17,10 @@ const ViewForm = () => {
     const fetchForm = useCallback(async () => {
         try {
             const res = await axios.get(`${config.apiUrl}/form/${id}`);
+            console.log(res);
             setFormSchema({
-                name: res?.data?.name, country: res?.data?.country,
-                brand: res?.data?.brand, schema: res?.data?.form_schema
+                name: res?.data?.page_name, country: res?.data?.countryName,
+                brand: res?.data?.brand_name, schema: res?.data?.form_schema
             });
         } catch (err) {
             console.log("Failed to load form");

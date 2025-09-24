@@ -64,7 +64,7 @@ const FormBuild = ({ isEdit }) => {
     async function saveForm(payload) {
         try {
             await axios.post(config.apiUrl + '/form/create', payload);
-            navigate('/forms')
+            navigate('/forms/list');
         }
         catch (e) {
             console.log(e);
@@ -74,7 +74,7 @@ const FormBuild = ({ isEdit }) => {
     async function editFrom(payload) {
         try {
             await axios.put(config.apiUrl + '/form/edit', payload);
-            navigate('/forms')
+            navigate('/forms/list')
         }
         catch (e) {
             console.log(e);
@@ -100,12 +100,30 @@ const FormBuild = ({ isEdit }) => {
         handleSave();
     };
 
-    function handleSave() {
+    const genrateFormId = async () => {
+        try{
+            const res = await axios(`${import.meta.env.VITE_BASE_URL}/api/email/uniqueIdForm`);
+            console.log(res);
+            return res.data.id;
+        }
+        catch(e)
+        {
+            console.log('error generating form id',e);
+        }
+    }
+
+    async function handleSave() {
 
         if (isEdit) {
-            editFrom({ name: formName, schema, country, brand, id })
+            editFrom({ formId:id, schema, page_name:formName })
         }
-        else { saveForm({ name: formName, schema: schema, country, brand }); }
+        else { 
+            const formId = await genrateFormId();
+            saveForm({
+            formId,pageName:formName, schema, regionId:country.id, brandId:brand.id,websiteId :website.id
+            // name: formName, schema: schema, country, brand,
+         }); 
+        }
 
     }
 
@@ -113,9 +131,10 @@ const FormBuild = ({ isEdit }) => {
         try {
             const res = await axios.get(`${config.apiUrl}/form/${id}`);
             console.log(res);
-            setFormName(res?.data?.name);
-            setCountry(res?.data?.country);
-            setBrand(res?.data?.brand);
+            setFormName(res?.data?.page_name);
+            setCountry({countryName: res?.data?.countryName});
+            console.log({name: res?.data?.brand_name})
+            setBrand({name: res?.data?.brand_name});
             setSchema(res?.data?.form_schema);
             setInitialSchema(res?.data?.form_schema)
             setFormFetched((prev) => !prev)
@@ -153,7 +172,7 @@ const FormBuild = ({ isEdit }) => {
                     <TextField
                         fullWidth
                         label="Form Name"
-                        value={formName}
+                        value={formName || ''}
                         onChange={(e) => setFormName(e.target.value)}
                         sx={{
                             width: { xs: "100%", sm: 220 },
@@ -167,6 +186,7 @@ const FormBuild = ({ isEdit }) => {
                     <TextField
                         select
                         fullWidth
+                        disabled={isEdit}
                         label="Country"
                         value={country?.countryName || ""}
                         onChange={(e) => {
@@ -193,7 +213,7 @@ const FormBuild = ({ isEdit }) => {
                     <TextField
                         select
                         fullWidth
-                        disabled={country === ""}
+                        disabled={country === "" || isEdit}
                         label="Brand"
                         value={brand?.name || ""}
                         onChange={(e) => {
@@ -221,7 +241,7 @@ const FormBuild = ({ isEdit }) => {
                         select
                         fullWidth
                         label="Website"
-                        disabled={brand === ""}
+                        disabled={brand === "" || isEdit}
                         value={website?.name || ''}
                         onChange={(e) => {
                             const website = websites.filter((val) => (val.name===e.target.value))
