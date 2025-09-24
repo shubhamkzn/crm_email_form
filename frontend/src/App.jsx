@@ -23,6 +23,7 @@ import Layout from './components/Layout.jsx';
 import DisplayForm from './components/formIo/DisplayForm/DisplayForm.jsx';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "formiojs/dist/formio.full.min.css";
+import SeeAllData from "./components/pages/SeeAllData.jsx";
 const App = () => {
   return (
     <Routes >
@@ -36,12 +37,14 @@ const App = () => {
        <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/seeData" element={<SeeData />} />
+        <Route path="/seeData" element={<SeeAllData />} />
         <Route path="/history" element={<History />} />
         <Route path="/templates" element={<EmailTemplateSystem />} />
         <Route path="/templates/build" element={<BuildTemplates />} />
         <Route path="/templates/existing" element={<AllTemplates />} />
         <Route path="/test" element={<EmailBuilder/>} />
+        {/* <Route path="/seeAllData" element={<SeeAllData/>} /> */}
+
       </Route>
         <Route path="/templates/editor/:templateId?" element={<Editor />} />
       

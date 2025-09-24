@@ -278,14 +278,13 @@ export const getFormDetailsWithNames = async (formId) => {
   );
   return rows.length ? rows[0] : null;
 };
-
 // -------------------- TEMPLATE <-> FORM MAPPING --------------------
 export const addTemplateFormMapping = async (templateId, formId) => {
   const conn = getConnection();
-  // Will throw ER_DUP_ENTRY if the (template_id, form_id) pair already exists
   const [result] = await conn.execute(
-    `INSERT INTO template_form (template_id, form_id) VALUES (?, ?)`,
+    `INSERT INTO form_email_map (template_id, form_id, created_at) VALUES (?, ?, NOW())`,
     [templateId, formId]
   );
   return result;
 };
+ 

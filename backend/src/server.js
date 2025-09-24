@@ -10,6 +10,7 @@ import emailRoutes from "./routes/emailRoutes.js";
 import formRoute from "./routes/form.js"
 import submissionRoute from "./routes/submission.js"
 import regionRoute from './routes/region.route.js'
+import emailLogsRouter from "./routes/emailLogs.js"
 import websiteRoute from './routes/websiteRoutes.js'
 dotenv.config();
 
@@ -42,6 +43,7 @@ const startServer = async () => {
     app.use('/api/websites',websiteRoute)
     app.use('/form', formRoute);
     app.use('/submission', submissionRoute);
+app.use("/api/emaillogs", emailLogsRouter);
 
 
     if (process.env.NODE_ENV === "production") {
