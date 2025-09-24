@@ -65,7 +65,6 @@ route.delete("/:id", async (req, res) => {
     res.status(500);
   }
 });
-
 // POST /createBrand
 route.post("/createBrand", async (req, res) => {
   try {

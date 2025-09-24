@@ -168,6 +168,60 @@ JOIN region r
 
 
 
+createBrand: async ({ name, countryId }) => {
+  const db = await getConnection();
+
+  const [result] = await db.query(
+    "INSERT INTO brands (name, country_id) VALUES (?, ?)",
+    [name, countryId]
+  );
+
+  // Fetch the inserted row including created_at
+  const [rows] = await db.query(
+    "SELECT id, name, country_id, created_at FROM brands WHERE id = ?",
+    [result.insertId]
+  );
+
+  return rows[0];
+},
+
+
+
+
+createWebsite: async ({ name, brandId, countryId }) => {
+  const db = await getConnection();
+
+  // Sanitize name for table safety
+  const safeName = name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
+
+  // Generate log table name based on website name
+  const logTableName = `email_log_${safeName}`;
+
+  // Step 1: Insert website with log_table value
+  const [result] = await db.query(
+    "INSERT INTO websites (name, brand_id, country_id, log_table) VALUES (?, ?, ?, ?)",
+    [name, brandId, countryId, logTableName]
+  );
+
+  const websiteId = result.insertId;
+
+  // Step 2: Create the log table in DB
+await db.query(`
+  CREATE TABLE IF NOT EXISTS \`${logTableName}\` (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      to_email VARCHAR(255) NOT NULL,
+      subject VARCHAR(255) NOT NULL,
+      body TEXT,
+      status ENUM('sent','failed') DEFAULT 'sent',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
+  return { id: websiteId, name, logTable: logTableName };
+},
+
+
+
 };
 
 

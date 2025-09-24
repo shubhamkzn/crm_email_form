@@ -1,6 +1,6 @@
 import { sendMail } from "../lib/sendmail.js";
 import {
-  ensureBrandTableExists,
+  ensureWebsiteTableExists,
   logEmail,
   getBrandByNameOrCreate,
   getEmailLogs,
@@ -15,69 +15,78 @@ import {
   getOneTemplate,
   addBrand,
   getBrandByRegion,
+  getFormIdByTemplateId ,
+  getFormDetails ,
+  insertEmailMasterLog ,
+  getFormDetailsWithNames,
+  addTemplateFormMapping,
 } from "../models/emailModel.js";
 import { nanoid } from "nanoid";
 
 // -------------------- SEND EMAIL --------------------
 export const sendEmailController = async (req, res) => {
   try {
-    const { id, data, brand } = req.body;
+    const { templateId, data } = req.body;
 
-    if (!id || !data) {
-      return res.status(400).json({ error: "id and data are required" });
+    if (!templateId || !data) {
+      return res.status(400).json({ error: "templateId and data are required" });
     }
 
-    // 1. Fetch template
-    const template = await getOneTemplate(id);
-    if (!template) {
-      return res.status(404).json({ error: "Template not found" });
-    }
+    // Fetch template
+    const template = await getOneTemplate(templateId);
+    if (!template) return res.status(404).json({ error: "Template not found" });
 
     const { html, config, name, created } = template;
 
-    // 2. Replace placeholders
+    // Fetch form_id
+    const formId = await getFormIdByTemplateId(templateId);
+    if (!formId) return res.status(404).json({ error: "No form linked to this template" });
+
+    // Fetch form details with names
+    const form = await getFormDetailsWithNames(formId);
+    if (!form) return res.status(404).json({ error: "Form not found" });
+
+    // Replace placeholders
     let finalHtml = html;
     for (const [key, value] of Object.entries(data)) {
       const regex = new RegExp(`{{\\s*${key}\\s*}}`, "g");
       finalHtml = finalHtml.replace(regex, value ?? "");
     }
 
-    // 3. Parse config
+    // Parse config
     const parsedConfig = typeof config === "string" ? JSON.parse(config) : config;
     const toEmail = parsedConfig.to;
     const subject = parsedConfig.subject;
-    console.log(html);
-    // 4. Send email
-    await sendMail({
-      to: toEmail,
-      subject,
-      text: "See HTML version",
-      html: finalHtml,
-    });
 
-    // 5. Ensure brand exists
-    if (brand) {
-      const obj = await getBrandByNameOrCreate(brand);
-      await ensureBrandTableExists(`${obj.log_table}`);
-      await logEmail({
-        tableName: `${obj.log_table}`,
-        toEmail,
-        subject,
-        body: finalHtml,
-        status: "sent",
-      });
-    }
+    // Send email
+    await sendMail({ to: toEmail, subject, text: "See HTML version", html: finalHtml });
+
+    // Insert into master email log
+    await insertEmailMasterLog({
+      form_id: formId,
+      template_id: templateId,
+      form_schema: form.form_schema,
+      page_name: form.page_name,
+      brand_name: form.brand_name,
+      region_name: form.region_name,
+      website_name: form.website_name,
+      email_content: { toEmail, subject, html: finalHtml },
+      status: "sent"
+    });
 
     res.json({
       success: true,
-      message: "Email sent successfully",
-      templateUsed: { id, name, created, subject, toEmail },
+      message: "Email sent and logged successfully",
+      templateUsed: { id: templateId, name, created, subject, toEmail },
     });
+
   } catch (error) {
     console.error("sendEmailController Error:", error);
     res.status(500).json({ error: "Failed to send email" });
   }
 };
+
+
 
 // -------------------- GET BRAND DATA (WITH PAGINATION) --------------------
 export const getBrandDataController = async (req, res) => {
@@ -124,6 +133,39 @@ export const getAllBrandsController = async (req, res) => {
   } catch (error) {
     console.error("getAllBrandsController Error:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+
+// -------------------- LINK FORM ID TO TEMPLATE --------------------
+export const addFormIdController = async (req, res) => {
+  try {
+    const { formId, templateId } = req.body;
+ 
+    if (!formId || !templateId || !String(formId).trim() || !String(templateId).trim()) {
+      return res.status(400).json({ message: 'formId and templateId are required' });
+    }
+ 
+    try {
+      const result = await addTemplateFormMapping(templateId.trim(), formId.trim());
+      // success
+      return res.status(201).json({
+        message: 'Form ID linked to template',
+        templateId: templateId.trim(),
+        formId: formId.trim(),
+        insertId: result?.insertId ?? null
+      });
+    } catch (err) {
+      // Duplicate pair (primary key)
+      if (err && err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json({ message: 'Form ID already linked to this template' });
+      }
+      console.error('addFormIdController inner error:', err);
+      return res.status(500).json({ message: 'Failed to link Form ID', error: err?.message });
+    }
+  } catch (error) {
+    console.error('addFormIdController error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 
@@ -243,3 +285,5 @@ export const copyTemplate = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+

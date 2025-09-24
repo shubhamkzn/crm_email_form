@@ -40,10 +40,10 @@ const App = () => {
         <Route path="/history" element={<History />} />
         <Route path="/templates" element={<EmailTemplateSystem />} />
         <Route path="/templates/build" element={<BuildTemplates />} />
-        <Route path="/templates/editor/:templateId?" element={<Editor />} />
         <Route path="/templates/existing" element={<AllTemplates />} />
         <Route path="/test" element={<EmailBuilder/>} />
       </Route>
+        <Route path="/templates/editor/:templateId?" element={<Editor />} />
       
       {/* Form Management Pages (wrapped in Layout) */}
         <Route path="/forms" element={<Layout />}>

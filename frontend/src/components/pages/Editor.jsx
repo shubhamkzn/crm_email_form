@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 
-
 // Sanitize HTML
 const sanitizeHtml = (html) => {
   const temp = document.createElement('div');
@@ -43,7 +42,7 @@ export default function EmailBuilder() {
   // State
   const [emailConfig, setEmailConfig] = useState({
     templateId: templateId,
-    FormId: '',
+    formId: '',          // <-- new: store the Form ID here
     to: '',
     cc: '',
     bcc: '',
@@ -53,9 +52,9 @@ export default function EmailBuilder() {
     subject: ''
   });
 
-  const [brands, setBrands] = useState([]);
-  const [newBrandName, setNewBrandName] = useState("");
-  const [showBrandModal, setShowBrandModal] = useState(false);
+  const [formIdInput, setFormIdInput] = useState(''); // input the user types
+  const [addingFormId, setAddingFormId] = useState(false);
+
   const [html, setHtml] = useState('');
   const [activeTab, setActiveTab] = useState('visual');
   const [splitView, setSplitView] = useState(false);
@@ -91,7 +90,6 @@ export default function EmailBuilder() {
   <body contenteditable="true"></body>
 </html>`, []);
 
-
   // Font families
   const fontFamilies = [
     { name: 'Arial', value: 'Arial, sans-serif' },
@@ -121,22 +119,6 @@ export default function EmailBuilder() {
     setNotification({ type, message });
     setTimeout(() => setNotification(null), 4000);
   }, []);
-
-  // Fetch brands
-  // useEffect(() => {
-  //   const fetchBrands = async () => {
-  //     try {
-  //       const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/email/brands`);
-  //       if (!res.ok) throw new Error("Failed to fetch brands");
-  //       const data = await res.json();
-  //       setBrands(data);
-  //     } catch (err) {
-  //       console.error(err);
-  //       showNotification("error", "Failed to load brands");
-  //     }
-  //   };
-  //   fetchBrands();
-  // }, [showNotification]);
 
   // Handle template data from location state
   useEffect(() => {
@@ -169,32 +151,7 @@ export default function EmailBuilder() {
         showNotification("success", `Template "${templateData.name}" loaded for editing`);
       }
     }
-  }, []);
-
-  // Add brand
-  // const addNewBrand = useCallback(async () => {
-  //   if (newBrandName.trim()) {
-  //     try {
-  //       const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/email/brands`, {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ name: newBrandName.trim() }),
-  //       });
-
-  //       if (!res.ok) throw new Error("Failed to add brand");
-  //       const brand = await res.json();
-
-  //       setBrands((prev) => [...prev, brand]);
-  //       setEmailConfig((prev) => ({ ...prev, brand: brand.name }));
-  //       setNewBrandName("");
-  //       setShowBrandModal(false);
-  //       showNotification("success", "Brand added");
-  //     } catch (err) {
-  //       console.error(err);
-  //       showNotification("error", "Failed to add brand");
-  //     }
-  //   }
-  // }, [newBrandName, setEmailConfig, showNotification]);
+  }, []); // intentionally left empty
 
   // History management
   const addToHistory = useCallback((content) => {
@@ -223,7 +180,6 @@ export default function EmailBuilder() {
     }
   }, [history, historyIndex]);
 
-
   const handleVisualInput = useCallback(() => {
     const body = getIframeBody();
     if (body) {
@@ -237,26 +193,24 @@ export default function EmailBuilder() {
 
   // --- INSERT: synchronous flush before switching to Code view ---
   const switchToCode = useCallback(() => {
-  try {
-    const body = getIframeBody();
-    if (body) {
-      const newHtml = sanitizeHtml(body.innerHTML || '');
-      // Force React to synchronously update html state so the code view receives it immediately
-      flushSync(() => setHtml(newHtml));
-      // If the code textarea is mounted, set its DOM value immediately (defensive)
-      if (codeEditorRef.current) {
-        try { codeEditorRef.current.value = newHtml; } catch (err) { /* ignore */ }
+    try {
+      const body = getIframeBody();
+      if (body) {
+        const newHtml = sanitizeHtml(body.innerHTML || '');
+        // Force React to synchronously update html state so the code view receives it immediately
+        flushSync(() => setHtml(newHtml));
+        // If the code textarea is mounted, set its DOM value immediately (defensive)
+        if (codeEditorRef.current) {
+          try { codeEditorRef.current.value = newHtml; } catch (err) { /* ignore */ }
+        }
       }
+    } catch (err) {
+      // defensive: ignore
     }
-  } catch (err) {
-    // defensive: ignore
-  }
-  // Now switch - after html is guaranteed flushed
-  setActiveTab('code');
-  setSplitView(false);
-}, [getIframeBody]);
-
-
+    // Now switch - after html is guaranteed flushed
+    setActiveTab('code');
+    setSplitView(false);
+  }, [getIframeBody]);
 
   // Code editor change handler
   const handleCodeChange = useCallback((e) => {
@@ -265,34 +219,31 @@ export default function EmailBuilder() {
     addToHistory(newHtml);
   }, [addToHistory]);
 
-
   // --- INSERT: switchToVisual to synchronously flush code -> visual before switching ---
   const switchToVisual = useCallback(() => {
-  try {
-    // Read the DOM textarea directly to capture the latest user edits
-    const currentCode = codeEditorRef.current ? codeEditorRef.current.value : null;
-    const newHtml = sanitizeHtml(typeof currentCode === 'string' ? currentCode : html || '');
-    // Force React to synchronously update html state
-    flushSync(() => setHtml(newHtml));
-    // Immediately write into iframe body (if present) so the visual shows instantly
     try {
-      const body = getIframeBody();
-      if (body) {
-        body.innerHTML = newHtml;
+      // Read the DOM textarea directly to capture the latest user edits
+      const currentCode = codeEditorRef.current ? codeEditorRef.current.value : null;
+      const newHtml = sanitizeHtml(typeof currentCode === 'string' ? currentCode : html || '');
+      // Force React to synchronously update html state
+      flushSync(() => setHtml(newHtml));
+      // Immediately write into iframe body (if present) so the visual shows instantly
+      try {
+        const body = getIframeBody();
+        if (body) {
+          body.innerHTML = newHtml;
+        }
+      } catch (err) {
+        // ignore if iframe inaccessible
       }
     } catch (err) {
-      // ignore if iframe inaccessible
+      // defensive ignore
     }
-  } catch (err) {
-    // defensive ignore
-  }
 
-  // Switch view after state/body updated
-  setActiveTab('visual');
-  setSplitView(false);
-}, [getIframeBody, html]);
-
-
+    // Switch view after state/body updated
+    setActiveTab('visual');
+    setSplitView(false);
+  }, [getIframeBody, html]);
 
   // Enhanced formatting function for iframe
   const applyFormatting = useCallback((command, value = null) => {
@@ -431,7 +382,6 @@ export default function EmailBuilder() {
     }
   }, [getIframeDocument, getIframeBody, handleVisualInput]);
 
-
   // --- REPLACE previous setupIframeListeners / handleIframeLoad logic with this effect ---
   useEffect(() => {
     const iframe = visualIframeRef.current;
@@ -507,10 +457,6 @@ export default function EmailBuilder() {
     // We include handler functions that are declared with useCallback so this effect reruns only when those change.
   }, [visualIframeRef, applyFormatting, addToHistory, undo, redo]);
 
-
-  // Enhanced visual input handler for iframe
-
-
   // Insert snippet at cursor for iframe
   const insertSnippet = useCallback((snippetHtml) => {
     if (activeTab === 'visual') {
@@ -571,7 +517,6 @@ export default function EmailBuilder() {
     }
   }, [getIframeBody, html]);
 
-
   // Sync iframe content when html changes
   useEffect(() => {
     if (activeTab === 'visual') {
@@ -620,24 +565,7 @@ export default function EmailBuilder() {
     return errors;
   }, [emailConfig]);
 
-  // Send email
-  // const sendEmail = useCallback(async () => {
-  //   const errors = validateEmail();
-  //   if (errors.length > 0) {
-  //     showNotification('error', errors[0]);
-  //     return;
-  //   }
-
-  //   setIsLoading(true);
-  //   try {
-  //     await new Promise(resolve => setTimeout(resolve, 2000));
-  //     showNotification('success', 'Email sent successfully');
-  //   } catch (error) {
-  //     showNotification('error', 'Failed to send email');
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }, [validateEmail, showNotification]);
+  // Send email (kept simple as before)
   const sendEmail = () => {
     navigate("/templates/existing")
   }
@@ -766,22 +694,6 @@ export default function EmailBuilder() {
       icon: <Image className="w-3.5 h-3.5" />,
       action: 'image'
     },
-    //     {
-    //       name: '2 Columns',
-    //       icon: <SplitSquareVertical className="w-3.5 h-3.5" />,
-    //       code: `<table width="100%" cellpadding="0" cellspacing="0" style="margin: 20px 0;">
-    //   <tr>
-    //     <td width="50%" style="padding: 15px; vertical-align: top;">
-    //       <h3 style="color: #1a1a1a; margin: 0 0 10px 0;">Column 1</h3>
-    //       <p style="color: #4a4a4a; margin: 0;">Content here</p>
-    //     </td>
-    //     <td width="50%" style="padding: 15px; vertical-align: top;">
-    //       <h3 style="color: #1a1a1a; margin: 0 0 10px 0;">Column 2</h3>
-    //       <p style="color: #4a4a4a; margin: 0;">Content here</p>
-    //     </td>
-    //   </tr>
-    // </table>`
-    //     },
     {
       name: 'Divider',
       icon: <Minus className="w-3.5 h-3.5" />,
@@ -804,6 +716,50 @@ export default function EmailBuilder() {
 </ul>`
     }
   ], []);
+
+  // ----- NEW: addFormId (replaces addNewBrand behaviour) -----
+  const addFormId = useCallback(async () => {
+    const formId = (formIdInput || '').trim();
+    if (!formId) {
+      showNotification('error', 'Form ID is required');
+      return;
+    }
+
+    setAddingFormId(true);
+
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BASE_URL}/api/email/formids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ formId, templateId })
+      });
+
+      if (res.status === 409) {
+        // duplicate or already exists
+        const body = await res.json().catch(() => null);
+        showNotification('error', body?.message || 'Form ID already exists for this template');
+        return;
+      }
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => 'Failed to add Form ID');
+        throw new Error(errText || 'Failed to add Form ID');
+      }
+
+      const data = await res.json();
+      // Data shape flexible; we set the formId into emailConfig so saveTemplate carries it too
+      setEmailConfig(prev => ({ ...prev, formId: data.formId ?? formId }));
+      setFormIdInput('');
+      showNotification('success', 'Form ID linked to template');
+    } catch (err) {
+      console.error('addFormId error:', err);
+      showNotification('error', err.message || 'Failed to add Form ID');
+    } finally {
+      setAddingFormId(false);
+    }
+  }, [formIdInput, templateId, showNotification]);
+
+  // -----------------------------------------
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -850,7 +806,7 @@ export default function EmailBuilder() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Premium Sidebar */}
+        {/* Left Sidebar - CONFIGURATION */}
         <aside className="w-80 bg-white border-r border-gray-200 overflow-y-auto">
           <div className="p-5 space-y-5">
             {/* Configuration Section */}
@@ -859,105 +815,114 @@ export default function EmailBuilder() {
                 Email Configuration
               </h3>
 
-             <div className="space-y-4">
-  {/* Brand */}
-  <div>
-    <label className="block text-xs font-medium text-gray-700 mb-1.5">FormId</label>
-    <input
-      type="text"
-      value={emailConfig.FormId}
-      onChange={(e) => setEmailConfig(prev => ({ ...prev, FormId: e.target.value }))}
-      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      placeholder="Enter brand name"
-    />
-  </div>
+              <div className="space-y-4">
+                {/* Form ID (replaces Brand dropdown) */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Form ID</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={formIdInput}
+                      onChange={(e) => setFormIdInput(e.target.value)}
+                      className="flex-1 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter form ID and click Add"
+                    />
+                    <button
+                      onClick={addFormId}
+                      disabled={addingFormId}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm font-medium"
+                    >
+                      {addingFormId ? 'Adding…' : 'Add Form ID'}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">This links a form ID with this template (one-time action).</p>
+                </div>
 
-  {/* Subject */}
-  <div>
-    <label className="block text-xs font-medium text-gray-700 mb-1.5">Subject *</label>
-    <input
-      type="text"
-      value={emailConfig.subject}
-      onChange={(e) => setEmailConfig(prev => ({ ...prev, subject: e.target.value }))}
-      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      placeholder="Enter subject line"
-    />
-  </div>
+                {/* Subject */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Subject *</label>
+                  <input
+                    type="text"
+                    value={emailConfig.subject}
+                    onChange={(e) => setEmailConfig(prev => ({ ...prev, subject: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter subject line"
+                  />
+                </div>
 
-  {/* From Fields */}
-  <div className="grid grid-cols-2 gap-3">
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1.5">From Name *</label>
-      <input
-        type="text"
-        value={emailConfig.fromName}
-        onChange={(e) => setEmailConfig(prev => ({ ...prev, fromName: e.target.value }))}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        placeholder="John Doe"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1.5">From Email *</label>
-      <input
-        type="email"
-        value={emailConfig.fromEmail}
-        onChange={(e) => setEmailConfig(prev => ({ ...prev, fromEmail: e.target.value }))}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        placeholder="john@example.com"
-      />
-    </div>
-  </div>
+                {/* From Fields */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">From Name *</label>
+                    <input
+                      type="text"
+                      value={emailConfig.fromName}
+                      onChange={(e) => setEmailConfig(prev => ({ ...prev, fromName: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">From Email *</label>
+                    <input
+                      type="email"
+                      value={emailConfig.fromEmail}
+                      onChange={(e) => setEmailConfig(prev => ({ ...prev, fromEmail: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="john@example.com"
+                    />
+                  </div>
+                </div>
 
-  {/* Reply To */}
-  <div>
-    <label className="block text-xs font-medium text-gray-700 mb-1.5">Reply To</label>
-    <input
-      type="email"
-      value={emailConfig.replyTo}
-      onChange={(e) => setEmailConfig(prev => ({ ...prev, replyTo: e.target.value }))}
-      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      placeholder="reply@example.com"
-    />
-  </div>
+                {/* Reply To */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">Reply To</label>
+                  <input
+                    type="email"
+                    value={emailConfig.replyTo}
+                    onChange={(e) => setEmailConfig(prev => ({ ...prev, replyTo: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="reply@example.com"
+                  />
+                </div>
 
-  {/* To */}
-  <div>
-    <label className="block text-xs font-medium text-gray-700 mb-1.5">To *</label>
-    <input
-      type="text"
-      value={emailConfig.to}
-      onChange={(e) => setEmailConfig(prev => ({ ...prev, to: e.target.value }))}
-      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-      placeholder="recipient@example.com"
-    />
-    <p className="text-xs text-gray-500 mt-1">Separate multiple emails with commas</p>
-  </div>
+                {/* To */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1.5">To *</label>
+                  <input
+                    type="text"
+                    value={emailConfig.to}
+                    onChange={(e) => setEmailConfig(prev => ({ ...prev, to: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="recipient@example.com"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Separate multiple emails with commas</p>
+                </div>
 
-  {/* CC & BCC */}
-  <div className="grid grid-cols-2 gap-3">
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1.5">CC</label>
-      <input
-        type="text"
-        value={emailConfig.cc}
-        onChange={(e) => setEmailConfig(prev => ({ ...prev, cc: e.target.value }))}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        placeholder="cc@example.com"
-      />
-    </div>
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1.5">BCC</label>
-      <input
-        type="text"
-        value={emailConfig.bcc}
-        onChange={(e) => setEmailConfig(prev => ({ ...prev, bcc: e.target.value }))}
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-        placeholder="bcc@example.com"
-      />
-    </div>
-  </div>
-</div>
-
+                {/* CC & BCC */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">CC</label>
+                    <input
+                      type="text"
+                      value={emailConfig.cc}
+                      onChange={(e) => setEmailConfig(prev => ({ ...prev, cc: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="cc@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">BCC</label>
+                    <input
+                      type="text"
+                      value={emailConfig.bcc}
+                      onChange={(e) => setEmailConfig(prev => ({ ...prev, bcc: e.target.value }))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="bcc@example.com"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Actions */}
@@ -1310,16 +1275,6 @@ export default function EmailBuilder() {
                   {activeTab === 'code' && (
                     <>
                       <div className="w-px h-5 bg-gray-200"></div>
-                      {/* <button
-                        onClick={() => setSplitView(!splitView)}
-                        className={`px-3 py-1.5 text-sm font-medium transition-colors rounded-r-lg ${
-                          splitView ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50 text-gray-700'
-                        }`}
-                        title="Split View"
-                      >
-                        <SplitSquareVertical size={13} className="inline mr-1" />
-                        Split
-                      </button> */}
                     </>
                   )}
                 </div>
@@ -1464,6 +1419,7 @@ export default function EmailBuilder() {
                     <div><span className="font-medium">From:</span> {emailConfig.fromName || 'Sender'} &lt;{emailConfig.fromEmail || 'sender@example.com'}&gt;</div>
                     <div><span className="font-medium">To:</span> {emailConfig.to || 'recipient@example.com'}</div>
                     <div><span className="font-medium">Subject:</span> {emailConfig.subject || 'Email Subject'}</div>
+                    <div><span className="font-medium">Form ID:</span> {emailConfig.formId || '—'}</div>
                   </div>
                 </div>
                 <div className="p-6">
@@ -1474,8 +1430,6 @@ export default function EmailBuilder() {
           </div>
         </div>
       )}
-
-      
 
       {/* Notification Toast */}
       {notification && (

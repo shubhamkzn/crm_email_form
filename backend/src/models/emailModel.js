@@ -5,7 +5,7 @@ import { nanoid } from "nanoid";
 export const getBrandByNameOrCreate = async (brand) => {
   const conn = getConnection();
 
-  const [rows] = await conn.execute("SELECT * FROM brands WHERE name = ?", [
+  const [rows] = await conn.execute("SELECT * FROM websites WHERE name = ?", [
     brand,
   ]);
   if (rows.length > 0) return rows[0];
@@ -23,7 +23,7 @@ export const getBrandByNameOrCreate = async (brand) => {
 export const getAllBrands = async () => {
   const conn = getConnection();
   const [rows] = await conn.execute(
-    "SELECT id, name, log_table FROM brands ORDER BY name"
+    "SELECT id, name, log_table FROM websites ORDER BY name"
   );
   console.log('brands', rows);
   return rows;
@@ -50,7 +50,7 @@ export const addBrand = async ({ name, countryId }) => {
 export const getBrandByName = async (brand) => {
   const conn = getConnection();
   const [rows] = await conn.execute(
-    "SELECT log_table FROM brands WHERE name = ?",
+    "SELECT log_table FROM websites WHERE name = ?",
     [brand]
   );
   return rows.length > 0 ? rows[0] : null;
@@ -63,7 +63,7 @@ export const getBrandByRegion = async ({ regionId }) => {
 }
 
 // -------------------- EMAIL LOGS (Brand-Specific) --------------------
-export const ensureBrandTableExists = async (tableName) => {
+export const ensureWebsiteTableExists = async (tableName) => {
   const conn = getConnection();
   await conn.execute(`
     CREATE TABLE IF NOT EXISTS \`${tableName}\` (
@@ -208,4 +208,84 @@ export const getOneTemplate = async (templateId) => {
     row.config = {};
   }
   return row;
+};
+
+
+export const getFormIdByTemplateId = async (templateId) => {
+  const db = await getConnection();
+  const [rows] = await db.query(
+    `SELECT form_id FROM form_email_map WHERE template_id = ? ORDER BY created_at DESC LIMIT 1`,
+    [templateId]
+  );
+  return rows.length ? rows[0].form_id : null;
+};
+export const getFormDetails = async (formId) => {
+  const db = await getConnection();
+  const [rows] = await db.query(
+    `SELECT * FROM forms WHERE form_id = ?`,
+    [formId]
+  );
+  return rows.length ? rows[0] : null;
+};
+
+export const insertEmailMasterLog = async ({
+  form_id,
+  template_id,
+  form_schema,
+  page_name,
+  brand_name,
+  region_name,
+  website_name,
+  email_content,
+  status = "sent"
+}) => {
+  const db = await getConnection();
+  const [result] = await db.query(
+    `INSERT INTO email_master_log
+       (form_id, template_id, form_schema, page_name, brand_name, region_name, website_name, email_content, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+    [
+      form_id,
+      template_id,
+      JSON.stringify(form_schema),
+      page_name,
+      brand_name,
+      region_name,
+      website_name,
+      JSON.stringify(email_content),
+      status
+    ]
+  );
+  return result.insertId;
+};
+
+
+export const getFormDetailsWithNames = async (formId) => {
+  const db = await getConnection();
+  const [rows] = await db.query(
+    `SELECT
+       f.form_schema,
+       f.page_name,
+       b.name AS brand_name,
+       r.countryName AS region_name,
+       w.name AS website_name
+     FROM forms f
+     JOIN brands b   ON f.brand_id   = b.id
+     JOIN region r   ON f.region_id  = r.id
+     JOIN websites w ON f.website_id = w.id
+     WHERE f.form_id = ?`,
+    [formId]
+  );
+  return rows.length ? rows[0] : null;
+};
+
+// -------------------- TEMPLATE <-> FORM MAPPING --------------------
+export const addTemplateFormMapping = async (templateId, formId) => {
+  const conn = getConnection();
+  // Will throw ER_DUP_ENTRY if the (template_id, form_id) pair already exists
+  const [result] = await conn.execute(
+    `INSERT INTO template_form (template_id, form_id) VALUES (?, ?)`,
+    [templateId, formId]
+  );
+  return result;
 };

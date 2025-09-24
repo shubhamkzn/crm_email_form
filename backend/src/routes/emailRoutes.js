@@ -11,6 +11,7 @@ import {
   getBrandsByRegionController,
   getUniqueIDForm,
   addBrandController,
+  addFormIdController,
 } from "../controllers/emailController.js";
 
 const router = express.Router();
@@ -27,6 +28,9 @@ router.get("/brands", getAllBrandsController);
 router.get('/brands/:regionId',getBrandsByRegionController)
 
 router.post("/brands", addBrandController);
+
+
+router.post("/formids", addFormIdController);
 
 
 router.get("/uniqueid",getUniqueID);
