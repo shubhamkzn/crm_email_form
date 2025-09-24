@@ -53,12 +53,30 @@ export const sendEmailController = async (req, res) => {
       finalHtml = finalHtml.replace(regex, value ?? "");
     }
 
+    // // Parse config
+    // const parsedConfig = typeof config === "string" ? JSON.parse(config) : config;
+
+    // // Auto-fill missing 'to' and 'subject'
+    // const toEmail = parsedConfig.to || process.env.DEFAULT_TO_EMAIL || "fallback@example.com";
+    // const subject = parsedConfig.subject || "New Form Submission";
+
+    // // Optional: auto-fill missing placeholders like currentYear
+    // if (!data.currentYear) {
+    //   finalHtml = finalHtml.replace(/{{\s*currentYear\s*}}/g, new Date().getFullYear());
+    // }
+
+    
     // Parse config
     const parsedConfig = typeof config === "string" ? JSON.parse(config) : config;
 
     // Auto-fill missing 'to' and 'subject'
-    const toEmail = parsedConfig.to || process.env.DEFAULT_TO_EMAIL || "fallback@example.com";
-    const subject = parsedConfig.subject || "New Form Submission";
+let toEmail = parsedConfig.to || process.env.DEFAULT_TO_EMAIL || "fallback@example.com";
+// Replace {{email}} in config with data.email if present
+if (typeof toEmail === "string" && toEmail.includes("{{email}}")) {
+  toEmail = toEmail.replace("{{email}}", data.email || "");
+}
+
+const subject = parsedConfig.subject || "New Form Submission";
 
     // Optional: auto-fill missing placeholders like currentYear
     if (!data.currentYear) {

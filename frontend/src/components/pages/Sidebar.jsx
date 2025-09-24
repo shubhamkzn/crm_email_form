@@ -48,7 +48,7 @@ const Sidebar = ({ initialCompact = false, onNavigate }) => {
       children: [
         { to: '/forms', label: 'All Forms', icon: Grid3X3 },
         { to: '/forms/list', label: 'Templates', icon: Layers },
-        { to: '/form-analytics', label: 'Analytics', icon: Activity }
+        // { to: '/form-analytics', label: 'Analytics', icon: Activity }
       ]
     },
     {
@@ -73,8 +73,8 @@ const Sidebar = ({ initialCompact = false, onNavigate }) => {
       glowColor: 'rgba(16, 185, 129, 0.3)',
       children: [
         { to: '/leads', label: 'All Leads', icon: Database },
-        { to: '/lead-scoring', label: 'Lead Scoring', icon: Zap },
-        { to: '/lead-analytics', label: 'Analytics', icon: Activity }
+        // { to: '/lead-scoring', label: 'Lead Scoring', icon: Zap },
+        // { to: '/lead-analytics', label: 'Analytics', icon: Activity }
       ]
     }
   ];
