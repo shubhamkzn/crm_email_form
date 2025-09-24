@@ -3,6 +3,7 @@ import Submission from "../models/Submit.js"; // note the `.js` extension for ES
 
 const submissionRoute = express.Router();
 
+// Save submission
 submissionRoute.post("/", async (req, res) => {
   const { formId, data } = req.body;
   try {
@@ -14,6 +15,7 @@ submissionRoute.post("/", async (req, res) => {
   }
 });
 
+// Get all submissions for a form
 submissionRoute.get("/all/:id", async (req, res) => {
   const id = req.params.id;
   console.log("request received");
@@ -23,6 +25,17 @@ submissionRoute.get("/all/:id", async (req, res) => {
   } catch (e) {
     res.status(500);
     console.log("error", e);
+  }
+});
+
+// Get all leads
+submissionRoute.get("/getleads", async (req, res) => {
+  try {
+    const leads = await Submission.getLeads();
+    res.send(leads);
+  } catch (e) {
+    res.status(500);
+    console.log("error fetching leads", e);
   }
 });
 

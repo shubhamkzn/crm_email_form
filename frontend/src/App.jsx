@@ -24,6 +24,7 @@ import DisplayForm from './components/formIo/DisplayForm/DisplayForm.jsx';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "formiojs/dist/formio.full.min.css";
 import SeeAllData from "./components/pages/SeeAllData.jsx";
+import Lead from "./components/leads/Leads.jsx";
 const App = () => {
   return (
     <Routes >
@@ -43,6 +44,8 @@ const App = () => {
         <Route path="/templates/build" element={<BuildTemplates />} />
         <Route path="/templates/existing" element={<AllTemplates />} />
         <Route path="/test" element={<EmailBuilder/>} />
+        <Route path="/leads" element={<Lead/>} />
+
         
         {/* <Route path="/seeAllData" element={<SeeAllData/>} /> */}
 
