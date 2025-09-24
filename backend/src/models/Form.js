@@ -43,18 +43,11 @@ const Form = {
 
     const tableName = `form_${formId}_submissions`;
 
-    const allComponents = flattenComponents(schema.components);
+  const allComponents = flattenComponents(schema.components);
 
-    const columns = allComponents
-      .filter(c => c.type !== "button")
-      .map(c => {
-        switch (c.type) {
-          case "number": return `\`${c.key}\` INT`;
-          case "email":
-          case "textfield": return `\`${c.key}\` VARCHAR(255)`;
-          default: return `\`${c.key}\` ${mapFormioTypeToMySQL(c.type)}`;
-        }
-      });
+  const columns = allComponents
+    .filter(c => c.type !== "button")
+    .map(c => `\`${c.key}\` ${mapFormioTypeToMySQL(c.type)}`);
 
     const createTableSQL = `
       CREATE TABLE \`${tableName}\` (
@@ -65,7 +58,7 @@ const Form = {
     `;
     console.log(createTableSQL);
 
-    await db.query(createTableSQL);
+  await db.query(createTableSQL);
 
     return result.insertId;
   },
@@ -105,16 +98,19 @@ JOIN region r
     const db = await getConnection();
     const [rows] = await db.query(
       `SELECT 
-    f.form_schema,
-    f.page_name,
-    b.name AS brand_name,
-    r.countryName
-FROM forms f
-JOIN brands b 
-    ON f.brand_id = b.id
-JOIN region r 
-    ON f.region_id = r.id
-WHERE f.form_id = ?;
+      f.form_schema,
+      f.page_name,
+      b.id   AS brand_id,
+      b.name AS brand_name,
+      r.id   AS region_id,
+      r.countryName AS region_name,
+      w.id   AS website_id,
+      w.name AS website_name
+    FROM forms f
+    JOIN brands b   ON f.brand_id   = b.id
+    JOIN region r   ON f.region_id  = r.id
+    JOIN websites w ON f.website_id = w.id
+    WHERE f.form_id = ?;
 `,
       [formId]
     );

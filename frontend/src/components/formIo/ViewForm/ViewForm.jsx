@@ -19,7 +19,7 @@ const ViewForm = () => {
             const res = await axios.get(`${config.apiUrl}/form/${id}`);
             console.log(res);
             setFormSchema({
-                name: res?.data?.page_name, country: res?.data?.countryName,
+                name: res?.data?.page_name, country: res?.data?.region_name,
                 brand: res?.data?.brand_name, schema: res?.data?.form_schema
             });
         } catch (err) {

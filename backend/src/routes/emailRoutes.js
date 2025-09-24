@@ -8,9 +8,9 @@ import {
   getAllTemplate,
   routeDeleteTemplate,
   copyTemplate,
-  addBrandController, 
   getBrandsByRegionController,
   getUniqueIDForm,
+  addBrandController,
 } from "../controllers/emailController.js";
 
 const router = express.Router();
