@@ -32,43 +32,90 @@ function flattenComponents(components) {
 }
 
 const Form = {
-  create: async ({ name, schema, country, brand }) => {
-    const db = await getConnection(); // ✅ ensure connection
+ create: async ({ name, schema, country, brand }) => {
+  const db = await getConnection();
 
-    const [result] = await db.query(
-      "INSERT INTO form_schema (name, form_schema, country, brand) VALUES (?, ?, ?, ?)",
-      [name, JSON.stringify(schema), country, brand]
-    );
+  const [result] = await db.query(
+    "INSERT INTO form_schema (name, form_schema, country, brand) VALUES (?, ?, ?, ?)",
+    [name, JSON.stringify(schema), country, brand]
+  );
 
-    const formId = result.insertId;
-    const tableName = `form_${formId}_submissions`;
+  const formId = result.insertId;
+  const tableName = `form_${formId}_submissions`;
 
-    const allComponents = flattenComponents(schema.components);
+  const allComponents = flattenComponents(schema.components);
 
-    const columns = allComponents
-      .filter(c => c.type !== "button")
-      .map(c => {
-        switch (c.type) {
-          case "number": return `\`${c.key}\` INT`;
-          case "email":
-          case "textfield": return `\`${c.key}\` VARCHAR(255)`;
-          default: return `\`${c.key}\` ${mapFormioTypeToMySQL(c.type)}`;
-        }
-      });
+  const columns = allComponents
+    .filter(c => c.type !== "button")
+    .map(c => `\`${c.key}\` ${mapFormioTypeToMySQL(c.type)}`);
 
-    const createTableSQL = `
-      CREATE TABLE \`${tableName}\` (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        ${columns.join(",\n")},A
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-    console.log(createTableSQL);
+  const createTableSQL = `
+    CREATE TABLE \`${tableName}\` (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      ${columns.join(",\n")},
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  console.log(createTableSQL);
 
-    await db.query(createTableSQL);
+  await db.query(createTableSQL);
 
-    return result.insertId;
-  },
+  return formId;
+},
+
+
+createBrand: async ({ name, countryId }) => {
+  const db = await getConnection();
+
+  const [result] = await db.query(
+    "INSERT INTO brands (name, country_id) VALUES (?, ?)",
+    [name, countryId]
+  );
+
+  // Fetch the inserted row including created_at
+  const [rows] = await db.query(
+    "SELECT id, name, country_id, created_at FROM brands WHERE id = ?",
+    [result.insertId]
+  );
+
+  return rows[0];
+},
+
+
+
+
+createWebsite: async ({ name, brandId, countryId }) => {
+  const db = await getConnection();
+
+  // Sanitize name for table safety
+  const safeName = name.replace(/[^a-zA-Z0-9_]/g, "_").toLowerCase();
+
+  // Generate log table name based on website name
+  const logTableName = `email_log_${safeName}`;
+
+  // Step 1: Insert website with log_table value
+  const [result] = await db.query(
+    "INSERT INTO websites (name, brand_id, country_id, log_table) VALUES (?, ?, ?, ?)",
+    [name, brandId, countryId, logTableName]
+  );
+
+  const websiteId = result.insertId;
+
+  // Step 2: Create the log table in DB
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS \`${logTableName}\` (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      email VARCHAR(255) NOT NULL,
+      message TEXT,
+      status VARCHAR(50),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  return { id: websiteId, name, logTable: logTableName };
+},
+
+
 
 findAll: async ({ page = 1, limit = 10 }) => {
   const db = await getConnection();

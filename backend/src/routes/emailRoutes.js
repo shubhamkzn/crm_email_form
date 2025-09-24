@@ -8,7 +8,6 @@ import {
   getAllTemplate,
   routeDeleteTemplate,
   copyTemplate,
-  addBrandController, 
   getBrandsByRegionController,
   addBrandController ,
   getUniqueIDForm,

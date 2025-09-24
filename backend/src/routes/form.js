@@ -66,7 +66,67 @@ route.delete("/:id", async (req, res) => {
   }
 });
 
+// POST /createBrand
+route.post("/createBrand", async (req, res) => {
+  try {
+    const { name, countryId } = req.body;
+    console.log("Incoming brand data:", name, countryId);
 
+    if (!name || !countryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and countryId are required",
+      });
+    }
+
+    // Call your createBrand function
+    const brand = await Form.createBrand({ name, countryId });
+
+    res.status(201).json({
+      success: true,
+      brand,
+      message: "Brand created successfully",
+    });
+  } catch (err) {
+    console.error("Error creating brand:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create brand",
+      error: err.message,
+    });
+  }
+});
+
+
+route.post("/createWebsite", async (req, res) => {
+  try {
+    const { name, brandId, countryId } = req.body;
+
+    // Validate input
+    if (!name || !brandId || !countryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, brandId, and countryId are required",
+      });
+    }
+
+    // Create the website (this will also create the log table)
+    const website = await Form.createWebsite({ name, brandId, countryId });
+
+    res.status(201).json({
+      success: true,
+      website,
+      message: "Website created successfully",
+    });
+  } catch (err) {
+    console.error("Error creating website:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create website",
+      error: err.message,
+    });
+  }
+});
 
 
 export default route;
