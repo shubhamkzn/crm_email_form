@@ -16,7 +16,8 @@ const Submission = {
 
     const sql = `INSERT INTO \`${tableName}\` (${columns}) VALUES (${placeholders})`;
     const [result] = await db.query(sql, values);
-
+    console.log('result',result)
+    const submissionId= result.insertId;
     // Extract personal info for leads table
     const leadName =
       data.firstName && data.lastName
@@ -26,8 +27,8 @@ const Submission = {
     const leadPhone = data.phone || data.phoneNumber || null;
 
     await db.query(
-      `INSERT INTO leads (form_id, name, email, phone, data) VALUES (?, ?, ?, ?, ?)`,
-      [formId, leadName, leadEmail, leadPhone, JSON.stringify(data)]
+      `INSERT INTO leads (form_id, name, email, phone, data,submission_id) VALUES (?, ?, ?, ?, ?,?)`,
+      [formId, leadName, leadEmail, leadPhone, JSON.stringify(data),submissionId]
     );
 
     return result.insertId;
@@ -46,7 +47,27 @@ const Submission = {
   // Fetch all leads from central leads table
   getLeads: async () => {
     const db = await getConnection();
-    const [rows] = await db.query("SELECT * FROM leads ORDER BY created_at DESC");
+    const [rows] = await db.query(`SELECT 
+    l.*,
+    f.*,
+    w.id AS website_id,
+    w.name AS website_name,
+    w.log_table,
+    w.created_at AS website_created_at,
+    b.id AS brand_id,
+    b.name AS brand_name,
+    b.created_at AS brand_created_at,
+    r.id AS region_id,
+    r.countryName AS country_name
+FROM leads l
+JOIN forms f 
+    ON l.form_id = f.form_id
+LEFT JOIN websites w 
+    ON f.website_id = w.id
+LEFT JOIN brands b 
+    ON f.brand_id = b.id
+LEFT JOIN region r 
+    ON f.region_id = r.id`);
     return rows;
   },
 };

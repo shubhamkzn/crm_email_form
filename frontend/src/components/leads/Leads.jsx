@@ -11,17 +11,21 @@ const Lead = () => {
   }, []);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-20 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Leads Dashboard</h1>
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-100 border-b">
             <tr>
               <th className="p-3 text-sm font-semibold text-gray-700">#</th>
+              <th className="p-3 text-sm font-semibold text-gray-700">Country</th>
+              <th className="p-3 text-sm font-semibold text-gray-700">Brand</th>
+              <th className="p-3 text-sm font-semibold text-gray-700">Website</th>
               <th className="p-3 text-sm font-semibold text-gray-700">Name</th>
               <th className="p-3 text-sm font-semibold text-gray-700">Email</th>
               <th className="p-3 text-sm font-semibold text-gray-700">Phone</th>
               <th className="p-3 text-sm font-semibold text-gray-700">Form ID</th>
+              {/* <th className="p-3 text-sm font-semibold text-gray-700">Data</th> */}
               <th className="p-3 text-sm font-semibold text-gray-700">Created</th>
             </tr>
           </thead>
@@ -33,6 +37,9 @@ const Lead = () => {
                   className="hover:bg-gray-50 transition border-b"
                 >
                   <td className="p-3 text-sm text-gray-600">{index + 1}</td>
+                  <td className="p-3 text-sm text-gray-800">{lead.country_name || "-"}</td>
+                  <td className="p-3 text-sm text-gray-800">{lead.brand_name || "-"}</td>
+                  <td className="p-3 text-sm text-gray-800">{lead.website_name || "-"}</td>
                   <td className="p-3 text-sm text-gray-800">{lead.name || "-"}</td>
                   <td className="p-3 text-sm text-blue-600">{lead.email || "-"}</td>
                   <td className="p-3 text-sm">{lead.phone || "-"}</td>

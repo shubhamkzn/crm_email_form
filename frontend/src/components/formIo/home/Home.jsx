@@ -28,7 +28,6 @@ const Home = () => {
       );
       
       const responseData = res.data;
-      console.log(responseData);
       const data = responseData.rows || [];
       setForms(data);
       setHasNextPage(page < responseData.totalPages);
@@ -92,7 +91,7 @@ const Home = () => {
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {forms.map((form) => (
                 <div
-                  key={form.id}
+                  key={form.form_id}
                   className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-150"
                 >
                   <div className="flex items-center justify-between">

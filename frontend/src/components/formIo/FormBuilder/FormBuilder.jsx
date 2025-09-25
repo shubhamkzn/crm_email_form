@@ -400,7 +400,7 @@ const FormBuild = ({ isEdit }) => {
                                 </MenuItem>
                             ))}
                         </TextField>
-                        <IconButton 
+                        {!isEdit && <IconButton 
                             color="primary" 
                             disabled={!selectedCountry?.id}
                             onClick={() => setBrandModalOpen(true)}
@@ -413,7 +413,7 @@ const FormBuild = ({ isEdit }) => {
                             }}
                         >
                             <AddIcon />
-                        </IconButton>
+                        </IconButton>}
                     </Box>
                 </Grid>
 
@@ -462,7 +462,7 @@ const FormBuild = ({ isEdit }) => {
                                 </MenuItem>
                             ))}
                         </TextField>
-                        <IconButton 
+                        {!isEdit && <IconButton 
                             color="primary" 
                             disabled={!selectedBrand?.id}
                             onClick={() => setWebsiteModalOpen(true)}
@@ -475,7 +475,7 @@ const FormBuild = ({ isEdit }) => {
                             }}
                         >
                             <AddIcon />
-                        </IconButton>
+                        </IconButton>}
                     </Box>
                 </Grid>
             </Grid>
