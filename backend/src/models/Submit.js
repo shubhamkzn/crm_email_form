@@ -45,9 +45,10 @@ const Submission = {
   },
 
   // Fetch all leads from central leads table
-  getLeads: async () => {
-    const db = await getConnection();
-    const [rows] = await db.query(`SELECT 
+ getLeads: async (filters = {}) => {
+  const db = await getConnection();
+  
+  let query = `SELECT 
     l.*,
     f.*,
     w.id AS website_id,
@@ -59,17 +60,46 @@ const Submission = {
     b.created_at AS brand_created_at,
     r.id AS region_id,
     r.countryName AS country_name
-FROM leads l
-JOIN forms f 
-    ON l.form_id = f.form_id
-LEFT JOIN websites w 
-    ON f.website_id = w.id
-LEFT JOIN brands b 
-    ON f.brand_id = b.id
-LEFT JOIN region r 
-    ON f.region_id = r.id`);
-    return rows;
-  },
+  FROM leads l
+  JOIN forms f 
+      ON l.form_id = f.form_id
+  LEFT JOIN websites w 
+      ON f.website_id = w.id
+  LEFT JOIN brands b 
+      ON f.brand_id = b.id
+  LEFT JOIN region r 
+      ON f.region_id = r.id`;
+
+  const conditions = [];
+  const params = [];
+
+  // Add filter conditions
+  if (filters.country && filters.country !== '') {
+    conditions.push('r.id = ?');
+    params.push(filters.country);
+  }
+
+  if (filters.brand && filters.brand !== '') {
+    conditions.push('b.id = ?');
+    params.push(filters.brand);
+  }
+
+  if (filters.website && filters.website !== '') {
+    conditions.push('w.id = ?');
+    params.push(filters.website);
+  }
+
+  // Add WHERE clause if we have conditions
+  if (conditions.length > 0) {
+    query += ' WHERE ' + conditions.join(' AND ');
+  }
+
+  // Add ORDER BY for consistent results
+  query += ' ORDER BY l.created_at DESC';
+
+  const [rows] = await db.query(query, params);
+  return rows;
+},
 };
 
 export default Submission;

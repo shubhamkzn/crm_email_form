@@ -31,10 +31,16 @@ submissionRoute.get("/all/:id", async (req, res) => {
 // Get all leads
 submissionRoute.get("/getleads", async (req, res) => {
   try {
-    const leads = await Submission.getLeads();
+    const filters = {
+      country: req.query.country || '',
+      brand: req.query.brand || '',
+      website: req.query.website || ''
+    };
+    
+    const leads = await Submission.getLeads(filters);
     res.send(leads);
   } catch (e) {
-    res.status(500);
+    res.status(500).json({ error: "Error fetching leads" });
     console.log("error fetching leads", e);
   }
 });

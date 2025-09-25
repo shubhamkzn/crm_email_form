@@ -11,9 +11,29 @@ const Lead = () => {
     brand: "",
     website: "",
   });
-  const [selectedCountry, setSelectedCountry] = useState(null);
-  const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedWebsite, setSelectedWebsite] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const fetchLeads = async (currentFilters = filters) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (currentFilters.country) params.append('country', currentFilters.country);
+      if (currentFilters.brand) params.append('brand', currentFilters.brand);
+      if (currentFilters.website) params.append('website', currentFilters.website);
+      
+      const queryString = params.toString();
+      const url = `${import.meta.env.VITE_BASE_URL}/submission/getleads${queryString ? `?${queryString}` : ''}`;
+      
+      const res = await axios.get(url);
+      console.log(res.data);
+      setLeads(res.data);
+    } catch (err) {
+      console.error("Error fetching leads:", err);
+      setLeads([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchBrands = async (regionId) => {
     try {
@@ -24,6 +44,7 @@ const Lead = () => {
       setBrands([]);
     }
   };
+
   const fetchWebsites = async (brandId) => {
     try {
       const res = await axios(`${import.meta.env.VITE_BASE_URL}/api/websites/${brandId}`);
@@ -33,40 +54,63 @@ const Lead = () => {
       setWebsites([]);
     }
   };
+
   const fetchRegion = async () => {
-              try {
-                  const res = await axios(`${import.meta.env.VITE_BASE_URL}/api/region`);
-                  setCountries(res.data);
-              } catch (e) {
-                  console.log(e);
-              }
-          };
-    
-          // const 
+    try {
+      const res = await axios(`${import.meta.env.VITE_BASE_URL}/api/region`);
+      setCountries(res.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   const handleChange = (key, value) => {
     const newFilters = { ...filters, [key]: value };
+    
+    // Reset dependent filters when parent changes
+    if (key === 'country') {
+      newFilters.brand = '';
+      newFilters.website = '';
+      setBrands([]);
+      setWebsites([]);
+      if (value) {
+        fetchBrands(value);
+      }
+    } else if (key === 'brand') {
+      newFilters.website = '';
+      setWebsites([]);
+      if (value) {
+        fetchWebsites(value);
+      }
+    }
+    
     setFilters(newFilters);
-    if(key=='country'){
-      fetchBrands(value);
-    }
-    else if(key=='brand'){
-      fetchWebsites(value);
-    }
-    onFilter(newFilters); // send selected filters to parent
+    
+    // Fetch filtered leads
+    fetchLeads(newFilters);
+  };
+
+  const clearFilters = () => {
+    const clearedFilters = {
+      country: "",
+      brand: "",
+      website: "",
+    };
+    setFilters(clearedFilters);
+    setBrands([]);
+    setWebsites([]);
+    fetchLeads(clearedFilters);
   };
 
   useEffect(() => {
-    axios.get("http://localhost:3000/submission/getleads") // adjust API URL
-      .then((res) => { console.log(res.data); setLeads(res.data) })
-      .catch((err) => console.error("Error fetching leads:", err));
-
-      fetchRegion();
+    fetchRegion();
+    fetchLeads(); // Initial load
   }, []);
 
   return (
     <div className="p-20 bg-gray-50 min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-gray-800">Leads Dashboard</h1>
+      
       <div className="flex flex-wrap gap-3 bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-2">
         {/* Country */}
         <select
@@ -87,6 +131,7 @@ const Lead = () => {
           className="px-4 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           value={filters.brand}
           onChange={(e) => handleChange("brand", e.target.value)}
+          disabled={!filters.country}
         >
           <option value="">All Brands</option>
           {brands.map((b) => (
@@ -101,6 +146,7 @@ const Lead = () => {
           className="px-4 py-2 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
           value={filters.website}
           onChange={(e) => handleChange("website", e.target.value)}
+          disabled={!filters.brand}
         >
           <option value="">All Websites</option>
           {websites.map((w) => (
@@ -109,7 +155,26 @@ const Lead = () => {
             </option>
           ))}
         </select>
+
+        {/* Clear Filters Button */}
+        {(filters.country || filters.brand || filters.website) && (
+          <button
+            onClick={clearFilters}
+            className="px-4 py-2 text-sm bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+          >
+            Clear Filters
+          </button>
+        )}
       </div>
+
+      {/* Loading indicator */}
+      {loading && (
+        <div className="text-center py-4">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-2 text-gray-600">Loading leads...</p>
+        </div>
+      )}
+
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead className="bg-gray-100 border-b">
@@ -122,7 +187,6 @@ const Lead = () => {
               <th className="p-3 text-sm font-semibold text-gray-700">Email</th>
               <th className="p-3 text-sm font-semibold text-gray-700">Phone</th>
               <th className="p-3 text-sm font-semibold text-gray-700">Form ID</th>
-              {/* <th className="p-3 text-sm font-semibold text-gray-700">Data</th> */}
               <th className="p-3 text-sm font-semibold text-gray-700">Created</th>
             </tr>
           </thead>
@@ -148,8 +212,8 @@ const Lead = () => {
               ))
             ) : (
               <tr>
-                <td className="p-3 text-center text-gray-500" colSpan="6">
-                  No leads found.
+                <td className="p-3 text-center text-gray-500" colSpan="9">
+                  {loading ? "Loading..." : "No leads found."}
                 </td>
               </tr>
             )}
